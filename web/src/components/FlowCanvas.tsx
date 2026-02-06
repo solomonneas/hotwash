@@ -23,12 +23,42 @@ import PhaseNode from './nodes/PhaseNode';
 import StepNode from './nodes/StepNode';
 import DecisionNode from './nodes/DecisionNode';
 import ExecuteNode from './nodes/ExecuteNode';
-import { PlaybookGraph, FlowNode, FlowEdge } from '../types';
+import { PlaybookGraph, PlaybookTheme, FlowNode, FlowEdge } from '../types';
 
 import './FlowCanvas.css';
 
+/** Default GitHub-dark theme (backward compatible) */
+export const DEFAULT_THEME: PlaybookTheme = {
+  name: 'github-dark',
+  colors: {
+    background: '#0d1117',
+    surface: '#161b22',
+    border: '#30363d',
+    text: '#c9d1d9',
+    textSecondary: '#8b949e',
+    accent: '#58a6ff',
+    accentHover: '#79c0ff',
+  },
+  fonts: {
+    body: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    heading: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    mono: "source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace",
+  },
+  nodeColors: {
+    phase: { border: '#8957e5', bg: '#1c1f3d', badge: '#bc8cff' },
+    step: { border: '#1f6feb', bg: '#1a2c4d', badge: '#58a6ff' },
+    decision: { border: '#f78166', bg: '#3d2817', badge: '#ffa657' },
+    execute: { border: '#238636', bg: '#162e1b', badge: '#3fb950' },
+  },
+  edgeColor: '#58a6ff',
+};
+
 interface FlowCanvasProps {
   graph: PlaybookGraph;
+  /** Optional theme override — falls back to GitHub-dark defaults */
+  theme?: PlaybookTheme;
+  /** Optional custom nodeTypes map to override defaults */
+  customNodeTypes?: NodeTypes;
   onNodesChange?: (nodes: FlowNode[]) => void;
   onEdgesChange?: (edges: FlowEdge[]) => void;
 }
@@ -37,7 +67,7 @@ interface FlowCanvasProps {
  * Converts a playbook graph to React Flow format with proper positioning
  * Uses a simple vertical layout algorithm for node placement
  */
-const convertToFlowFormat = (graph: PlaybookGraph): { nodes: FlowNode[]; edges: FlowEdge[] } => {
+const convertToFlowFormat = (graph: PlaybookGraph, theme: PlaybookTheme = DEFAULT_THEME): { nodes: FlowNode[]; edges: FlowEdge[] } => {
   // Create a map to track node positions by level
   const levelMap = new Map<string, number>();
   const visited = new Set<string>();
@@ -123,7 +153,7 @@ const convertToFlowFormat = (graph: PlaybookGraph): { nodes: FlowNode[]; edges: 
     };
   });
 
-  // Convert edges with arrow markers
+  // Convert edges with arrow markers (themed)
   const flowEdges: FlowEdge[] = graph.edges.map(edge => ({
     id: edge.id,
     source: edge.source,
@@ -132,34 +162,36 @@ const convertToFlowFormat = (graph: PlaybookGraph): { nodes: FlowNode[]; edges: 
     type: 'smoothstep',
     animated: true,
     style: {
-      stroke: '#58a6ff',
+      stroke: theme.edgeColor,
       strokeWidth: 2,
     },
     labelStyle: {
-      fill: '#c9d1d9',
+      fill: theme.colors.text,
       fontWeight: 500,
       fontSize: 12,
     },
     labelBgStyle: {
-      fill: '#161b22',
+      fill: theme.colors.surface,
       fillOpacity: 0.9,
     },
     markerEnd: {
       type: MarkerType.ArrowClosed,
       width: 20,
       height: 20,
-      color: '#58a6ff',
+      color: theme.edgeColor,
     },
   }));
 
   return { nodes: flowNodes, edges: flowEdges };
 };
 
-const FlowCanvas: React.FC<FlowCanvasProps> = ({ graph, onNodesChange, onEdgesChange }) => {
+const FlowCanvas: React.FC<FlowCanvasProps> = ({ graph, theme, customNodeTypes, onNodesChange, onEdgesChange }) => {
+  const activeTheme = theme ?? DEFAULT_THEME;
+
   // Convert graph to flow format
   const { nodes: initialNodes, edges: initialEdges } = useMemo(
-    () => convertToFlowFormat(graph),
-    [graph]
+    () => convertToFlowFormat(graph, activeTheme),
+    [graph, activeTheme]
   );
 
   const [nodes, setNodes] = React.useState<FlowNode[]>(initialNodes);
@@ -167,13 +199,13 @@ const FlowCanvas: React.FC<FlowCanvasProps> = ({ graph, onNodesChange, onEdgesCh
 
   // Update nodes when graph changes
   React.useEffect(() => {
-    const converted = convertToFlowFormat(graph);
+    const converted = convertToFlowFormat(graph, activeTheme);
     setNodes(converted.nodes);
     setEdges(converted.edges);
-  }, [graph]);
+  }, [graph, activeTheme]);
 
-  // Define custom node types
-  const nodeTypes: NodeTypes = useMemo(
+  // Define custom node types — merge custom over defaults
+  const defaultNodeTypes: NodeTypes = useMemo(
     () => ({
       phase: PhaseNode,
       step: StepNode,
@@ -181,6 +213,11 @@ const FlowCanvas: React.FC<FlowCanvasProps> = ({ graph, onNodesChange, onEdgesCh
       execute: ExecuteNode,
     }),
     []
+  );
+
+  const nodeTypes: NodeTypes = useMemo(
+    () => (customNodeTypes ? { ...defaultNodeTypes, ...customNodeTypes } : defaultNodeTypes),
+    [defaultNodeTypes, customNodeTypes]
   );
 
   // Handle connection creation
@@ -236,7 +273,7 @@ const FlowCanvas: React.FC<FlowCanvasProps> = ({ graph, onNodesChange, onEdgesCh
         defaultZoom={1}
       >
         <Background
-          color="#30363d"
+          color={activeTheme.colors.border}
           gap={16}
           size={1}
           variant="dots"
@@ -246,19 +283,19 @@ const FlowCanvas: React.FC<FlowCanvasProps> = ({ graph, onNodesChange, onEdgesCh
         />
         <MiniMap
           nodeColor={(node) => {
-            // Color minimap nodes based on type
+            const nc = activeTheme.nodeColors;
             switch (node.type) {
-              case 'phase': return '#8957e5';
-              case 'step': return '#1f6feb';
-              case 'decision': return '#f78166';
-              case 'execute': return '#238636';
-              default: return '#58a6ff';
+              case 'phase': return nc.phase.border;
+              case 'step': return nc.step.border;
+              case 'decision': return nc.decision.border;
+              case 'execute': return nc.execute.border;
+              default: return activeTheme.colors.accent;
             }
           }}
-          maskColor="rgba(13, 17, 23, 0.85)"
+          maskColor={`${activeTheme.colors.background}dd`}
           style={{
-            backgroundColor: '#161b22',
-            border: '1px solid #30363d',
+            backgroundColor: activeTheme.colors.surface,
+            border: `1px solid ${activeTheme.colors.border}`,
           }}
         />
       </ReactFlow>
