@@ -6,46 +6,14 @@
  */
 
 import { PlaybookLibraryItem } from '../types';
+import { libraryItem as python, markdown as pythonMarkdown, graph as pythonGraph } from './vulnerability-remediation-python';
+import { libraryItem as software, markdown as softwareMarkdown, graph as softwareGraph } from './vulnerability-remediation-software';
+import { libraryItem as virtualbox, markdown as virtualboxMarkdown, graph as virtualboxGraph } from './vulnerability-remediation-virtualbox';
+import { libraryItem as wazuhExport, markdown as wazuhExportMarkdown, graph as wazuhExportGraph } from './wazuh-vulnerability-export';
+import { libraryItem as template, markdown as templateMarkdown, graph as templateGraph } from './template';
 
-export { libraryItem as pythonPlaybook } from './vulnerability-remediation-python';
-export { libraryItem as softwarePlaybook } from './vulnerability-remediation-software';
-export { libraryItem as virtualboxPlaybook } from './vulnerability-remediation-virtualbox';
-export { libraryItem as wazuhExportPlaybook } from './wazuh-vulnerability-export';
-export { libraryItem as templatePlaybook } from './template';
-
-export {
-  markdown as pythonMarkdown,
-  graph as pythonGraph,
-} from './vulnerability-remediation-python';
-
-export {
-  markdown as softwareMarkdown,
-  graph as softwareGraph,
-} from './vulnerability-remediation-software';
-
-export {
-  markdown as virtualboxMarkdown,
-  graph as virtualboxGraph,
-} from './vulnerability-remediation-virtualbox';
-
-export {
-  markdown as wazuhExportMarkdown,
-  graph as wazuhExportGraph,
-} from './wazuh-vulnerability-export';
-
-export {
-  markdown as templateMarkdown,
-  graph as templateGraph,
-} from './template';
-
-/**
- * All playbook library items in a single array for easy consumption.
- */
-import { libraryItem as python } from './vulnerability-remediation-python';
-import { libraryItem as software } from './vulnerability-remediation-software';
-import { libraryItem as virtualbox } from './vulnerability-remediation-virtualbox';
-import { libraryItem as wazuhExport } from './wazuh-vulnerability-export';
-import { libraryItem as template } from './template';
+export { python as pythonPlaybook, software as softwarePlaybook, virtualbox as virtualboxPlaybook, wazuhExport as wazuhExportPlaybook, template as templatePlaybook };
+export { pythonMarkdown, pythonGraph, softwareMarkdown, softwareGraph, virtualboxMarkdown, virtualboxGraph, wazuhExportMarkdown, wazuhExportGraph, templateMarkdown, templateGraph };
 
 export const allPlaybooks: PlaybookLibraryItem[] = [
   python,

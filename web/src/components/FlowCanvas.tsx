@@ -11,12 +11,11 @@ import ReactFlow, {
   Background,
   Controls,
   MiniMap,
-  Node,
-  Edge,
   Connection,
   addEdge,
   NodeTypes,
   MarkerType,
+  BackgroundVariant,
 } from 'react-flow-renderer';
 
 import PhaseNode from './nodes/PhaseNode';
@@ -185,7 +184,7 @@ const convertToFlowFormat = (graph: PlaybookGraph, theme: PlaybookTheme = DEFAUL
   return { nodes: flowNodes, edges: flowEdges };
 };
 
-const FlowCanvas: React.FC<FlowCanvasProps> = ({ graph, theme, customNodeTypes, onNodesChange, onEdgesChange }) => {
+const FlowCanvas: React.FC<FlowCanvasProps> = ({ graph, theme, customNodeTypes }) => {
   const activeTheme = theme ?? DEFAULT_THEME;
 
   // Convert graph to flow format
@@ -228,36 +227,6 @@ const FlowCanvas: React.FC<FlowCanvasProps> = ({ graph, theme, customNodeTypes, 
     []
   );
 
-  // Notify parent of node changes
-  const handleNodesChange = useCallback(
-    (changes: any) => {
-      setNodes((nds) => {
-        // Apply changes (from react-flow-renderer's applyNodeChanges if available)
-        // For now, we'll handle basic updates
-        const updatedNodes = [...nds];
-        if (onNodesChange) {
-          onNodesChange(updatedNodes);
-        }
-        return updatedNodes;
-      });
-    },
-    [onNodesChange]
-  );
-
-  // Notify parent of edge changes
-  const handleEdgesChange = useCallback(
-    (changes: any) => {
-      setEdges((eds) => {
-        const updatedEdges = [...eds];
-        if (onEdgesChange) {
-          onEdgesChange(updatedEdges);
-        }
-        return updatedEdges;
-      });
-    },
-    [onEdgesChange]
-  );
-
   return (
     <div className="flow-canvas">
       <ReactFlow
@@ -276,7 +245,7 @@ const FlowCanvas: React.FC<FlowCanvasProps> = ({ graph, theme, customNodeTypes, 
           color={activeTheme.colors.border}
           gap={16}
           size={1}
-          variant="dots"
+          variant={BackgroundVariant.Dots}
         />
         <Controls
           showInteractive={false}

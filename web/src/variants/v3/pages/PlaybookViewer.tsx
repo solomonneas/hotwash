@@ -70,7 +70,7 @@ const PlaybookViewer: React.FC<PlaybookViewerProps> = ({ slug, onNavigate }) => 
     );
   }
 
-  const { metadata, graph, markdown, tags, category } = playbook;
+  const { metadata, graph, markdown, tags } = playbook;
 
   return (
     <div className="v3-viewer">
