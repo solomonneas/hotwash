@@ -1,0 +1,251 @@
+/**
+ * V4 Import — New Schematic Creation Form
+ */
+
+.v4-import {
+  padding: 24px 28px;
+  padding-bottom: 120px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.v4-import-header h1 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #FBBF24;
+  margin: 0 0 4px 0;
+}
+
+.v4-import-subtitle {
+  font-size: 11px;
+  color: #94A3B8;
+  margin: 0 0 28px 0;
+  letter-spacing: 0.03em;
+}
+
+/* Input section */
+.v4-input-section {
+  margin-bottom: 16px;
+}
+
+.v4-input-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.v4-input-label-text {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #FBBF24;
+}
+
+.v4-input-stats {
+  font-size: 9px;
+  color: #94A3B8;
+  letter-spacing: 0.03em;
+}
+
+.v4-textarea-wrapper {
+  position: relative;
+}
+
+.v4-import-textarea {
+  width: 100%;
+  min-height: 260px;
+  padding: 14px 16px;
+  background: rgba(6, 14, 26, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 2px;
+  color: #E8F0FE;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.v4-import-textarea::placeholder {
+  color: rgba(148, 163, 184, 0.4);
+}
+
+.v4-import-textarea:focus {
+  border-color: #38BDF8;
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.15);
+}
+
+/* Action buttons */
+.v4-import-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.v4-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 7px 18px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-transform: uppercase;
+}
+
+.v4-btn--primary {
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid #38BDF8;
+  color: #38BDF8;
+}
+
+.v4-btn--primary:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.2);
+  color: #7DD3FC;
+}
+
+.v4-btn--primary:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.v4-btn--secondary {
+  background: transparent;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: #94A3B8;
+}
+
+.v4-btn--secondary:hover {
+  border-color: rgba(148, 163, 184, 0.4);
+  color: #E8F0FE;
+}
+
+/* Parse results */
+.v4-parse-results {
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  background: rgba(15, 29, 50, 0.3);
+}
+
+.v4-parse-results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+  background: rgba(56, 189, 248, 0.05);
+}
+
+.v4-parse-results-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.v4-parse-results-icon::before {
+  content: '✓';
+  color: #4ADE80;
+  font-weight: 600;
+}
+
+.v4-parse-results-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #FBBF24;
+}
+
+.v4-parse-results-time {
+  font-size: 9px;
+  color: #94A3B8;
+  letter-spacing: 0.04em;
+}
+
+/* Warnings */
+.v4-parse-warnings {
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.08);
+}
+
+.v4-parse-warnings-header {
+  font-size: 10px;
+  font-weight: 600;
+  color: #FB923C;
+  margin-bottom: 6px;
+  letter-spacing: 0.04em;
+}
+
+.v4-parse-warnings-list {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 10px;
+  color: #FB923C;
+  opacity: 0.8;
+  line-height: 1.6;
+}
+
+/* Parse stats */
+.v4-parse-stats {
+  display: flex;
+  gap: 24px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.08);
+}
+
+.v4-parse-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.v4-parse-stat-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #38BDF8;
+  line-height: 1;
+}
+
+.v4-parse-stat-label {
+  font-size: 8px;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Parse flowchart output */
+.v4-parse-flow {
+  height: 500px;
+}
+
+.v4-parse-flow .flow-canvas {
+  border: none;
+  border-radius: 0;
+  height: 100%;
+  background-color: #0A1628;
+}
+
+@media (max-width: 768px) {
+  .v4-import {
+    padding: 16px;
+  }
+
+  .v4-import-actions {
+    flex-wrap: wrap;
+  }
+
+  .v4-parse-stats {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .v4-parse-flow {
+    height: 350px;
+  }
+}

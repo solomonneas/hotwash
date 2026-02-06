@@ -1,0 +1,255 @@
+/**
+ * V4 Library — Parts Catalog with Numbered Items
+ */
+
+.v4-library {
+  padding: 24px 28px;
+  padding-bottom: 120px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.v4-library-header h1 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #FBBF24;
+  margin: 0 0 4px 0;
+}
+
+.v4-library-subtitle {
+  font-size: 11px;
+  color: #94A3B8;
+  margin: 0 0 24px 0;
+  letter-spacing: 0.03em;
+}
+
+/* Toolbar: search + count */
+.v4-library-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.v4-search-wrapper {
+  flex: 1;
+  max-width: 400px;
+  position: relative;
+}
+
+.v4-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94A3B8;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.v4-search-input {
+  width: 100%;
+  padding: 7px 12px 7px 30px;
+  background: rgba(15, 29, 50, 0.6);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 2px;
+  color: #E8F0FE;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.v4-search-input::placeholder {
+  color: rgba(148, 163, 184, 0.5);
+}
+
+.v4-search-input:focus {
+  border-color: #38BDF8;
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.2);
+}
+
+.v4-library-count {
+  font-size: 10px;
+  color: #94A3B8;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* Filter pills */
+.v4-filter-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.v4-filter-pill {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  color: #94A3B8;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.15s ease;
+}
+
+.v4-filter-pill:hover {
+  border-color: rgba(56, 189, 248, 0.3);
+  color: #E8F0FE;
+}
+
+.v4-filter-pill--active {
+  border-color: #38BDF8;
+  color: #38BDF8;
+  background: rgba(56, 189, 248, 0.08);
+}
+
+/* Parts catalog — specification table rows */
+.v4-parts-catalog {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.v4-part-card {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  gap: 16px;
+  align-items: start;
+  background: rgba(15, 29, 50, 0.4);
+  border: 1px solid rgba(56, 189, 248, 0.1);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.v4-part-card:hover {
+  border-color: rgba(56, 189, 248, 0.3);
+  background: rgba(15, 29, 50, 0.7);
+}
+
+.v4-part-card:hover::after {
+  content: '→';
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #38BDF8;
+  font-size: 14px;
+}
+
+.v4-part-number {
+  font-family: 'Oswald', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: rgba(56, 189, 248, 0.3);
+  line-height: 1;
+  padding-top: 2px;
+}
+
+.v4-part-info {
+  min-width: 0;
+}
+
+.v4-part-category {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #FBBF24;
+  margin-bottom: 3px;
+}
+
+.v4-part-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #E8F0FE;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.v4-part-description {
+  font-size: 10px;
+  color: #94A3B8;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.v4-part-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.v4-part-tag {
+  font-size: 9px;
+  color: #94A3B8;
+  padding: 1px 6px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 1px;
+  letter-spacing: 0.03em;
+}
+
+/* Spec table within card */
+.v4-part-specs {
+  display: flex;
+  gap: 16px;
+  font-size: 9px;
+}
+
+.v4-part-spec {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.v4-part-spec-label {
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 8px;
+}
+
+.v4-part-spec-value {
+  color: #38BDF8;
+  font-weight: 600;
+  font-size: 10px;
+}
+
+/* Empty state */
+.v4-library-empty {
+  text-align: center;
+  padding: 48px 20px;
+  color: #94A3B8;
+}
+
+.v4-library-empty-icon {
+  display: block;
+  font-size: 28px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+  .v4-library {
+    padding: 16px;
+  }
+
+  .v4-part-card {
+    grid-template-columns: 36px 1fr;
+  }
+
+  .v4-part-specs {
+    display: none;
+  }
+}

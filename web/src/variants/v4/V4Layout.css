@@ -1,0 +1,365 @@
+/**
+ * V4Layout — Interactive Blueprint / Engineering Schematic
+ *
+ * Deep blue blueprint background with CSS grid overlay,
+ * drawing border with tick marks, title block, corner markers.
+ */
+
+/* ================================================================
+   ROOT LAYOUT
+   ================================================================ */
+
+.v4-layout {
+  min-height: 100vh;
+  background-color: #0A1628;
+  color: #E8F0FE;
+  font-family: 'IBM Plex Mono', 'Fira Code', monospace;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Blueprint grid overlay */
+.v4-layout::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.04) 1px, transparent 1px),
+    linear-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.08) 1px, transparent 1px);
+  background-size:
+    20px 20px,
+    20px 20px,
+    100px 100px,
+    100px 100px;
+}
+
+/* ================================================================
+   DRAWING BORDER WITH TICK MARKS
+   ================================================================ */
+
+.v4-drawing-border {
+  position: relative;
+  z-index: 1;
+  margin: 16px;
+  min-height: calc(100vh - 32px);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Outer drawing frame */
+.v4-drawing-border::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 1px solid rgba(56, 189, 248, 0.1);
+  pointer-events: none;
+}
+
+/* Corner markers */
+.v4-corner-tl,
+.v4-corner-tr,
+.v4-corner-bl,
+.v4-corner-br {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.v4-corner-tl {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid #38BDF8;
+  border-left: 2px solid #38BDF8;
+}
+
+.v4-corner-tr {
+  top: -1px;
+  right: -1px;
+  border-top: 2px solid #38BDF8;
+  border-right: 2px solid #38BDF8;
+}
+
+.v4-corner-bl {
+  bottom: -1px;
+  left: -1px;
+  border-bottom: 2px solid #38BDF8;
+  border-left: 2px solid #38BDF8;
+}
+
+.v4-corner-br {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid #38BDF8;
+  border-right: 2px solid #38BDF8;
+}
+
+/* Tick marks along top edge */
+.v4-tick-bar-top {
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  height: 6px;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.v4-tick-bar-top .v4-tick {
+  width: 1px;
+  height: 6px;
+  background: rgba(232, 240, 254, 0.15);
+}
+
+.v4-tick-bar-top .v4-tick:nth-child(5n) {
+  background: rgba(232, 240, 254, 0.3);
+  height: 8px;
+}
+
+/* Tick marks along left edge */
+.v4-tick-bar-left {
+  position: absolute;
+  left: 0;
+  top: 20px;
+  bottom: 20px;
+  width: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.v4-tick-bar-left .v4-tick {
+  height: 1px;
+  width: 6px;
+  background: rgba(232, 240, 254, 0.15);
+}
+
+.v4-tick-bar-left .v4-tick:nth-child(5n) {
+  background: rgba(232, 240, 254, 0.3);
+  width: 8px;
+}
+
+/* ================================================================
+   TOP NAV BAR
+   ================================================================ */
+
+.v4-topbar {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.15);
+  background: rgba(10, 22, 40, 0.6);
+  backdrop-filter: blur(4px);
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.v4-topbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: #FBBF24;
+  cursor: pointer;
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0;
+}
+
+.v4-topbar-logo:hover {
+  color: #FCD34D;
+}
+
+.v4-topbar-logo-icon {
+  font-size: 18px;
+}
+
+.v4-topbar-version {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: #94A3B8;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  padding: 1px 5px;
+  border-radius: 2px;
+  letter-spacing: 0.05em;
+}
+
+.v4-topbar-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(56, 189, 248, 0.2);
+}
+
+.v4-topbar-nav {
+  display: flex;
+  gap: 4px;
+}
+
+.v4-nav-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  color: #94A3B8;
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 5px 12px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: all 0.15s ease;
+  border-radius: 2px;
+}
+
+.v4-nav-btn:hover {
+  color: #E8F0FE;
+  border-color: rgba(56, 189, 248, 0.2);
+  background: rgba(56, 189, 248, 0.05);
+}
+
+.v4-nav-btn--active {
+  color: #38BDF8;
+  border-color: rgba(56, 189, 248, 0.4);
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.v4-topbar-back {
+  margin-left: auto;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: #94A3B8;
+  background: none;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 4px 10px;
+  cursor: pointer;
+  border-radius: 2px;
+  letter-spacing: 0.03em;
+  transition: all 0.15s ease;
+}
+
+.v4-topbar-back:hover {
+  color: #E8F0FE;
+  border-color: rgba(232, 240, 254, 0.3);
+}
+
+/* ================================================================
+   MAIN CONTENT AREA
+   ================================================================ */
+
+.v4-content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* ================================================================
+   TITLE BLOCK (bottom-right)
+   ================================================================ */
+
+.v4-title-block {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 10;
+  background: rgba(10, 22, 40, 0.92);
+  border: 1px solid #FBBF24;
+  font-family: 'IBM Plex Mono', monospace;
+  min-width: 220px;
+  backdrop-filter: blur(8px);
+}
+
+.v4-title-block-header {
+  background: rgba(251, 191, 36, 0.1);
+  padding: 6px 12px;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.3);
+  font-family: 'Oswald', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #FBBF24;
+}
+
+.v4-title-block-body {
+  padding: 8px 12px;
+}
+
+.v4-title-block-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 2px 0;
+  font-size: 9px;
+  line-height: 1.6;
+}
+
+.v4-title-block-label {
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.v4-title-block-value {
+  color: #E8F0FE;
+  text-align: right;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.v4-title-block-divider {
+  height: 1px;
+  background: rgba(251, 191, 36, 0.15);
+  margin: 4px 0;
+}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+
+@media (max-width: 768px) {
+  .v4-drawing-border {
+    margin: 8px;
+    min-height: calc(100vh - 16px);
+  }
+
+  .v4-title-block {
+    position: relative;
+    bottom: auto;
+    right: auto;
+    margin: 16px;
+    min-width: auto;
+  }
+
+  .v4-topbar {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 14px;
+  }
+
+  .v4-topbar-nav {
+    order: 3;
+    width: 100%;
+  }
+}

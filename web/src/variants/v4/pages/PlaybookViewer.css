@@ -1,0 +1,364 @@
+/**
+ * V4 PlaybookViewer — Full-viewport flowchart with annotation panel
+ */
+
+.v4-viewer {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 100px);
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* Header bar */
+.v4-viewer-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.12);
+  flex-shrink: 0;
+}
+
+.v4-viewer-back {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: #94A3B8;
+  background: none;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 3px 8px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.15s ease;
+}
+
+.v4-viewer-back:hover {
+  color: #E8F0FE;
+  border-color: rgba(232, 240, 254, 0.3);
+}
+
+.v4-viewer-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #FBBF24;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.v4-viewer-meta-pills {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.v4-viewer-meta-pill {
+  font-size: 9px;
+  color: #94A3B8;
+  padding: 2px 8px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 2px;
+  letter-spacing: 0.04em;
+}
+
+/* Main area: flowchart + annotation */
+.v4-viewer-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Flowchart hero — 70%+ viewport */
+.v4-flowchart-hero {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+}
+
+.v4-flowchart-hero .flow-canvas {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0;
+  background-color: #0A1628;
+}
+
+/* Override react-flow styles for V4 */
+.v4-flowchart-hero .react-flow {
+  background-color: #0A1628;
+}
+
+.v4-flowchart-hero .react-flow__background {
+  background-color: #0A1628;
+}
+
+.v4-flowchart-hero .react-flow__controls {
+  background-color: rgba(15, 29, 50, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 2px;
+}
+
+.v4-flowchart-hero .react-flow__controls-button {
+  background-color: rgba(15, 29, 50, 0.8);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+  color: #94A3B8;
+}
+
+.v4-flowchart-hero .react-flow__controls-button:hover {
+  background-color: rgba(56, 189, 248, 0.1);
+  color: #38BDF8;
+}
+
+.v4-flowchart-hero .react-flow__minimap {
+  background-color: rgba(15, 29, 50, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 2px;
+}
+
+.v4-flowchart-hero .react-flow__edge-path {
+  stroke: #38BDF8;
+  stroke-width: 1.5;
+}
+
+.v4-flowchart-hero .react-flow__edge.animated .react-flow__edge-path {
+  stroke-dasharray: 5;
+}
+
+/* Annotation panel (right sidebar) */
+.v4-annotation-panel {
+  width: 280px;
+  flex-shrink: 0;
+  border-left: 1px solid rgba(56, 189, 248, 0.12);
+  background: rgba(10, 22, 40, 0.6);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.v4-annotation-header {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+  font-family: 'Oswald', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #FBBF24;
+}
+
+.v4-annotation-section {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.06);
+}
+
+.v4-annotation-section-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #94A3B8;
+  margin-bottom: 6px;
+}
+
+.v4-annotation-section-value {
+  font-size: 11px;
+  color: #E8F0FE;
+  line-height: 1.5;
+}
+
+.v4-annotation-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.v4-annotation-tag {
+  font-size: 9px;
+  color: #4ADE80;
+  padding: 1px 6px;
+  border: 1px solid rgba(74, 222, 128, 0.2);
+  border-radius: 1px;
+  letter-spacing: 0.03em;
+}
+
+.v4-annotation-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.v4-annotation-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.v4-annotation-stat-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #38BDF8;
+  line-height: 1;
+}
+
+.v4-annotation-stat-label {
+  font-size: 8px;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Tab bar for content/raw/flow */
+.v4-viewer-tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.12);
+  flex-shrink: 0;
+}
+
+.v4-viewer-tab {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94A3B8;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.v4-viewer-tab:hover {
+  color: #E8F0FE;
+}
+
+.v4-viewer-tab--active {
+  color: #38BDF8;
+  border-bottom-color: #38BDF8;
+}
+
+/* Content/markdown view */
+.v4-content-view {
+  flex: 1;
+  padding: 24px 28px;
+  overflow-y: auto;
+}
+
+.v4-content-view .v4-md {
+  color: #E8F0FE;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+/* Raw markdown view */
+.v4-raw-view {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.v4-raw-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 20px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.08);
+}
+
+.v4-raw-label {
+  font-size: 10px;
+  color: #94A3B8;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.v4-raw-copy-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: #94A3B8;
+  background: transparent;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 3px 10px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.15s ease;
+}
+
+.v4-raw-copy-btn:hover {
+  color: #E8F0FE;
+  border-color: rgba(232, 240, 254, 0.3);
+}
+
+.v4-raw-copy-btn--copied {
+  color: #4ADE80;
+  border-color: rgba(74, 222, 128, 0.3);
+}
+
+.v4-raw-content {
+  flex: 1;
+  padding: 16px 20px;
+  margin: 0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #94A3B8;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-y: auto;
+}
+
+/* Not found */
+.v4-viewer-notfound {
+  text-align: center;
+  padding: 48px 20px;
+  color: #94A3B8;
+  font-size: 13px;
+}
+
+.v4-viewer-notfound-icon {
+  display: block;
+  font-size: 28px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.v4-viewer-notfound-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: #38BDF8;
+  background: none;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 4px 12px;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.v4-viewer-notfound-link:hover {
+  background: rgba(56, 189, 248, 0.08);
+}
+
+@media (max-width: 768px) {
+  .v4-annotation-panel {
+    display: none;
+  }
+
+  .v4-viewer-header {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px 14px;
+  }
+
+  .v4-viewer-meta-pills {
+    display: none;
+  }
+}
