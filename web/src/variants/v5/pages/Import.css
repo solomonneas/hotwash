@@ -1,0 +1,221 @@
+/**
+ * V5 Import — Clean Academic Submission Form
+ */
+
+.v5-import {
+  font-family: 'Crimson Pro', Georgia, serif;
+}
+
+.v5-import-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.02em;
+  color: #1C1917;
+}
+
+.v5-import-subtitle {
+  font-size: 18px;
+  color: #78716C;
+  margin: 0;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+.v5-section-rule {
+  border: none;
+  border-top: 1px solid #D6D3D1;
+  margin: 24px 0;
+}
+
+/* Input section */
+.v5-import-input-section {
+  margin-bottom: 16px;
+}
+
+.v5-import-input-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.v5-import-label {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1C1917;
+}
+
+.v5-import-stats {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: #A8A29E;
+}
+
+.v5-import-textarea {
+  width: 100%;
+  min-height: 280px;
+  padding: 16px;
+  border: 1px solid #D6D3D1;
+  background: #FAFAF8;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1C1917;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.v5-import-textarea::placeholder {
+  color: #A8A29E;
+  font-style: italic;
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: 16px;
+}
+
+.v5-import-textarea:focus {
+  border-color: #1C1917;
+}
+
+/* Actions */
+.v5-import-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.v5-btn {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.v5-btn--primary {
+  background: #1C1917;
+  color: #FFFFFF;
+  border: 1px solid #1C1917;
+  padding: 8px 24px;
+}
+
+.v5-btn--primary:hover {
+  background: #292524;
+}
+
+.v5-btn--primary:disabled {
+  background: #A8A29E;
+  border-color: #A8A29E;
+  cursor: not-allowed;
+}
+
+.v5-btn--secondary {
+  background: none;
+  color: #78716C;
+  border: 1px solid #D6D3D1;
+  padding: 8px 20px;
+}
+
+.v5-btn--secondary:hover {
+  color: #1C1917;
+  border-color: #1C1917;
+}
+
+/* Parse results */
+.v5-parse-results h2 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #1C1917;
+}
+
+.v5-parse-results p {
+  margin: 0 0 16px 0;
+  line-height: 1.7;
+}
+
+/* Warnings */
+.v5-parse-warnings {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border-left: 3px solid #D6D3D1;
+}
+
+.v5-parse-warnings h3 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #78716C;
+}
+
+.v5-warning-list {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 15px;
+  color: #78716C;
+}
+
+.v5-warning-list li {
+  margin-bottom: 4px;
+}
+
+.v5-warning-list li::marker {
+  color: #DC2626;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+}
+
+/* Parse figure */
+.v5-parse-figure {
+  margin: 24px 0 0 0;
+}
+
+.v5-parse-figure .v5-figure-canvas {
+  width: 100%;
+  height: 420px;
+  border: 1px solid #D6D3D1;
+  background: #FFFFFF;
+}
+
+.v5-parse-figure .v5-figure-caption {
+  font-size: 14px;
+  font-style: italic;
+  color: #78716C;
+  margin-top: 12px;
+}
+
+.v5-parse-figure .v5-figure-caption strong {
+  font-style: normal;
+  color: #1C1917;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .v5-import-title {
+    font-size: 26px;
+  }
+
+  .v5-import-actions {
+    flex-wrap: wrap;
+  }
+
+  .v5-import-textarea {
+    min-height: 200px;
+  }
+}
+
+@media print {
+  .v5-import-actions {
+    display: none;
+  }
+
+  .v5-import-textarea {
+    display: none;
+  }
+}

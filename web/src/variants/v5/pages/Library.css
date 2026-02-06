@@ -1,0 +1,246 @@
+/**
+ * V5 Library — Bibliography
+ * Numbered entries, abstracts, author fields, academic reference style.
+ */
+
+.v5-library {
+  font-family: 'Crimson Pro', Georgia, serif;
+}
+
+.v5-library-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.02em;
+  color: #1C1917;
+}
+
+.v5-library-subtitle {
+  font-size: 18px;
+  color: #78716C;
+  margin: 0;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+.v5-section-rule {
+  border: none;
+  border-top: 1px solid #D6D3D1;
+  margin: 24px 0;
+}
+
+/* Search */
+.v5-library-search {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.v5-search-label {
+  font-size: 16px;
+  color: #78716C;
+  font-style: italic;
+  white-space: nowrap;
+}
+
+.v5-search-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 6px 0;
+  border: none;
+  border-bottom: 1px solid #D6D3D1;
+  background: transparent;
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: 16px;
+  color: #1C1917;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.v5-search-input::placeholder {
+  color: #A8A29E;
+  font-style: italic;
+}
+
+.v5-search-input:focus {
+  border-bottom-color: #1C1917;
+}
+
+.v5-search-count {
+  font-size: 14px;
+  color: #A8A29E;
+  font-style: italic;
+  white-space: nowrap;
+}
+
+/* Filters */
+.v5-library-filters {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.v5-filter {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: 15px;
+  color: #78716C;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+
+.v5-filter:hover {
+  color: #1C1917;
+}
+
+.v5-filter--active {
+  color: #1C1917;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Bibliography */
+.v5-bibliography {
+  /* entries container */
+}
+
+.v5-bib-heading {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 24px 0;
+  color: #1C1917;
+}
+
+.v5-bib-entry {
+  display: flex;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid #E7E5E4;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.v5-bib-entry:hover {
+  background-color: #FAFAF8;
+  margin: 0 -16px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.v5-bib-entry:last-child {
+  border-bottom: 1px solid #D6D3D1;
+}
+
+.v5-bib-number {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  color: #DC2626;
+  font-weight: 600;
+  flex-shrink: 0;
+  padding-top: 2px;
+  min-width: 28px;
+}
+
+.v5-bib-body {
+  flex: 1;
+}
+
+.v5-bib-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1C1917;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.v5-bib-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 14px;
+  color: #78716C;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.v5-bib-author {
+  font-weight: 500;
+}
+
+.v5-bib-sep {
+  color: #D6D3D1;
+}
+
+.v5-bib-type,
+.v5-bib-category {
+  font-style: italic;
+}
+
+.v5-bib-abstract {
+  font-size: 16px;
+  line-height: 1.7;
+  color: #1C1917;
+  margin-bottom: 4px;
+}
+
+.v5-bib-keywords {
+  font-size: 14px;
+  color: #78716C;
+  line-height: 1.5;
+}
+
+.v5-bib-stats {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: #A8A29E;
+  margin-top: 6px;
+}
+
+/* Empty state */
+.v5-library-empty {
+  text-align: center;
+  padding: 48px 0;
+}
+
+.v5-library-empty p {
+  font-style: italic;
+  color: #78716C;
+  font-size: 18px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .v5-library-title {
+    font-size: 26px;
+  }
+
+  .v5-library-search {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .v5-bib-entry:hover {
+    margin: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+@media print {
+  .v5-library-search,
+  .v5-library-filters {
+    display: none;
+  }
+
+  .v5-bib-entry {
+    break-inside: avoid;
+  }
+}

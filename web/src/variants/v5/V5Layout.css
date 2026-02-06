@@ -1,0 +1,204 @@
+/**
+ * V5Layout — Minimal Academic / Research Paper
+ *
+ * White background, centered column, serif typography,
+ * thin horizontal rules, printable. No sidebar. No decoration.
+ */
+
+/* ================================================================
+   ROOT LAYOUT
+   ================================================================ */
+
+.v5-layout {
+  min-height: 100vh;
+  background-color: #FFFFFF;
+  color: #1C1917;
+  font-family: 'Crimson Pro', Georgia, 'Times New Roman', serif;
+  font-size: 18px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ================================================================
+   HEADER / NAV
+   ================================================================ */
+
+.v5-header {
+  padding: 24px 24px 0;
+}
+
+.v5-header-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  align-items: baseline;
+  gap: 32px;
+}
+
+.v5-header-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1C1917;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.v5-header-title:hover {
+  color: #78716C;
+}
+
+.v5-nav {
+  display: flex;
+  gap: 24px;
+}
+
+.v5-nav-link {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #78716C;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.15s ease;
+  text-decoration: none;
+}
+
+.v5-nav-link:hover {
+  color: #1C1917;
+}
+
+.v5-nav-link--active {
+  color: #1C1917;
+  font-weight: 600;
+}
+
+.v5-nav-back {
+  margin-left: auto;
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: 14px;
+  font-style: italic;
+  color: #A8A29E;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.15s ease;
+}
+
+.v5-nav-back:hover {
+  color: #78716C;
+}
+
+/* ================================================================
+   HORIZONTAL RULES
+   ================================================================ */
+
+.v5-rule {
+  border: none;
+  border-top: 1px solid #D6D3D1;
+  margin: 0;
+}
+
+.v5-rule--header {
+  max-width: 720px;
+  margin: 16px auto 0;
+}
+
+/* ================================================================
+   MAIN CONTENT
+   ================================================================ */
+
+.v5-main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+/* ================================================================
+   FOOTER
+   ================================================================ */
+
+.v5-footer {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+}
+
+.v5-footer .v5-rule {
+  margin-bottom: 16px;
+}
+
+.v5-footer-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #A8A29E;
+  font-style: italic;
+}
+
+.v5-footer-dot {
+  color: #D6D3D1;
+}
+
+/* ================================================================
+   PRINT STYLES
+   ================================================================ */
+
+@media print {
+  .v5-header,
+  .v5-footer,
+  .v5-nav-back {
+    display: none;
+  }
+
+  .v5-layout {
+    font-size: 12pt;
+    line-height: 1.6;
+  }
+
+  .v5-main {
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  .v5-rule {
+    border-top-color: #000;
+  }
+}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+
+@media (max-width: 768px) {
+  .v5-header-inner {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .v5-nav {
+    order: 3;
+    width: 100%;
+    gap: 20px;
+  }
+
+  .v5-nav-back {
+    order: 2;
+  }
+
+  .v5-main {
+    padding: 24px 16px 48px;
+  }
+}

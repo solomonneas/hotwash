@@ -1,0 +1,193 @@
+/**
+ * V5 Dashboard — Executive Summary
+ * Academic paper aesthetic with tables, pull-quotes, key findings.
+ */
+
+.v5-dashboard {
+  font-family: 'Crimson Pro', Georgia, serif;
+}
+
+.v5-dashboard-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.02em;
+  color: #1C1917;
+  line-height: 1.2;
+}
+
+.v5-dashboard-subtitle {
+  font-size: 18px;
+  color: #78716C;
+  margin: 0;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+/* Section dividers */
+.v5-section-rule {
+  border: none;
+  border-top: 1px solid #D6D3D1;
+  margin: 32px 0;
+}
+
+/* Abstract */
+.v5-abstract h2,
+.v5-findings h2,
+.v5-coverage h2,
+.v5-composition h2,
+.v5-inventory h2 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  color: #1C1917;
+  letter-spacing: -0.01em;
+}
+
+.v5-abstract p,
+.v5-coverage p,
+.v5-composition p,
+.v5-inventory p {
+  margin: 0 0 16px 0;
+  line-height: 1.7;
+  color: #1C1917;
+}
+
+/* Key Findings grid */
+.v5-findings-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.v5-finding {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.v5-finding-value {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: #1C1917;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.v5-finding-label {
+  font-size: 14px;
+  color: #78716C;
+  font-style: italic;
+}
+
+/* Pull quote */
+.v5-pullquote {
+  margin: 0;
+  padding: 0 32px;
+  border-left: none;
+}
+
+.v5-pullquote p {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 20px;
+  font-weight: 400;
+  font-style: italic;
+  color: #78716C;
+  line-height: 1.6;
+  text-align: center;
+  margin: 0;
+}
+
+/* Tables */
+.v5-table-wrapper {
+  margin: 16px 0 0 0;
+  overflow-x: auto;
+}
+
+.v5-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: 16px;
+}
+
+.v5-table caption {
+  font-size: 14px;
+  font-style: italic;
+  color: #78716C;
+  text-align: left;
+  margin-bottom: 8px;
+  caption-side: bottom;
+  padding-top: 8px;
+}
+
+.v5-table thead th {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: left;
+  color: #78716C;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 8px 12px 8px 0;
+  border-bottom: 2px solid #1C1917;
+}
+
+.v5-table tbody td {
+  padding: 8px 12px 8px 0;
+  border-bottom: 1px solid #E7E5E4;
+  color: #1C1917;
+  line-height: 1.4;
+  vertical-align: top;
+}
+
+.v5-table tbody tr:last-child td {
+  border-bottom: 1px solid #D6D3D1;
+}
+
+.v5-table-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.v5-table-status {
+  font-style: italic;
+  color: #78716C;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .v5-findings-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .v5-dashboard-title {
+    font-size: 26px;
+  }
+
+  .v5-pullquote {
+    padding: 0 16px;
+  }
+
+  .v5-pullquote p {
+    font-size: 18px;
+  }
+}
+
+@media print {
+  .v5-finding-value {
+    font-size: 28pt;
+  }
+
+  .v5-table {
+    font-size: 10pt;
+  }
+}
