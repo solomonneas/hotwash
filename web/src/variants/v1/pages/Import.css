@@ -1,0 +1,176 @@
+/**
+ * V1 Import — Markdown Import / Parse Page
+ */
+
+.v1-import {
+  max-width: 900px;
+}
+
+.v1-import-instructions {
+  background: #EDE8D5;
+  border: 2px solid #4A5D23;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.v1-import-instructions h3 {
+  font-family: 'Oswald', 'Arial Narrow', Impact, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #2D3B12;
+  margin: 0 0 8px;
+}
+
+.v1-import-instructions ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.v1-import-instructions li {
+  margin-bottom: 4px;
+}
+
+/* Textarea */
+.v1-import-textarea {
+  width: 100%;
+  min-height: 300px;
+  padding: 16px;
+  font-family: 'Courier Prime', 'Courier New', Courier, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #1A1A1A;
+  background: #FAF7EE;
+  border: 2px solid #4A5D23;
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.v1-import-textarea:focus {
+  border-color: #2D3B12;
+  box-shadow: 0 0 0 2px rgba(45, 59, 18, 0.2);
+}
+
+.v1-import-textarea::placeholder {
+  color: #A09878;
+  font-style: italic;
+}
+
+/* Action bar */
+.v1-import-actions {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0 24px;
+  align-items: center;
+}
+
+.v1-import-btn {
+  font-family: 'Oswald', 'Arial Narrow', Impact, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 10px 24px;
+  border: 2px solid #2D3B12;
+  background: #2D3B12;
+  color: #F5F0E1;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.v1-import-btn:hover {
+  background: #4A5D23;
+  border-color: #4A5D23;
+}
+
+.v1-import-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.v1-import-btn--secondary {
+  background: none;
+  color: #4A5D23;
+  border-color: #4A5D23;
+}
+
+.v1-import-btn--secondary:hover {
+  background: #EDE8D5;
+}
+
+/* Parse result */
+.v1-parse-result {
+  margin-top: 24px;
+}
+
+.v1-parse-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+
+.v1-parse-result-header h3 {
+  font-family: 'Oswald', 'Arial Narrow', Impact, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #2D3B12;
+  margin: 0;
+}
+
+.v1-parse-time {
+  font-size: 11px;
+  color: #B8860B;
+  font-family: 'Oswald', 'Arial Narrow', Impact, sans-serif;
+  letter-spacing: 1px;
+}
+
+/* Parse errors */
+.v1-parse-errors {
+  background: #F5E6E6;
+  border: 2px solid #CC0000;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: #CC0000;
+}
+
+.v1-parse-errors h4 {
+  font-family: 'Oswald', 'Arial Narrow', Impact, sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 8px;
+  font-size: 12px;
+}
+
+.v1-parse-errors ul {
+  margin: 0;
+  padding-left: 16px;
+}
+
+/* Parse stats */
+.v1-parse-stats {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+  font-size: 12px;
+}
+
+.v1-parse-stat {
+  font-family: 'Oswald', 'Arial Narrow', Impact, sans-serif;
+  letter-spacing: 1px;
+  color: #4A5D23;
+}
+
+.v1-parse-stat strong {
+  color: #2D3B12;
+  font-size: 16px;
+  display: block;
+}
