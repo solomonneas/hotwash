@@ -11,6 +11,7 @@
 import React, { useEffect } from 'react';
 import './App.css';
 import { useHashRouter } from './router';
+import KeyboardHints from './components/KeyboardHints';
 import VariantPicker from './pages/VariantPicker';
 import V1App from './variants/v1';
 import V2App from './variants/v2';
@@ -44,6 +45,7 @@ function App() {
   if (route.page === 'picker' || route.variant === null) {
     return (
       <div className="App">
+        <KeyboardHints />
         <VariantPicker onSelect={(v) => navigateTo(v)} />
       </div>
     );
@@ -54,6 +56,7 @@ function App() {
   if (VariantApp) {
     return (
       <div className="App">
+        <KeyboardHints />
         <VariantApp route={route} onNavigate={navigate} />
       </div>
     );
@@ -62,6 +65,7 @@ function App() {
   // Fallback
   return (
     <div className="App">
+      <KeyboardHints />
       <VariantPicker onSelect={(v) => navigateTo(v)} />
     </div>
   );

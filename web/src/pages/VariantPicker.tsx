@@ -84,8 +84,21 @@ const VariantPicker: React.FC<VariantPickerProps> = ({ onSelect }) => {
             </div>
             <h2 style={styles.variantName}>{v.name}</h2>
             <p style={styles.variantDesc}>{v.description}</p>
-            <div style={{ ...styles.launchBtn, backgroundColor: v.accent }}>
-              Launch →
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+              <div style={{ ...styles.launchBtn, backgroundColor: v.accent, flex: 1 }}>
+                Launch →
+              </div>
+              <kbd style={{
+                fontSize: 12,
+                fontFamily: 'monospace',
+                padding: '2px 8px',
+                borderRadius: 4,
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                color: 'rgba(255,255,255,0.4)',
+              }}>
+                {v.id}
+              </kbd>
             </div>
           </button>
         ))}
