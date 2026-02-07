@@ -8,7 +8,7 @@
  *   Legacy      → ImportView still accessible as a variant sub-page
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import './App.css';
 import { useHashRouter } from './router';
 import VariantPicker from './pages/VariantPicker';
@@ -28,6 +28,17 @@ const variantComponents: Record<number, React.FC<{ route: any; onNavigate: (path
 
 function App() {
   const { route, navigate, navigateTo } = useHashRouter();
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      const num = parseInt(e.key);
+      if (num >= 1 && num <= 5) navigateTo(num);
+      else if (e.key === 'Escape' || e.key === '0') window.location.hash = '#/';
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [navigateTo]);
 
   // Variant picker (landing)
   if (route.page === 'picker' || route.variant === null) {
