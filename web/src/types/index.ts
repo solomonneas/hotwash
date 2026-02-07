@@ -11,7 +11,7 @@ import { Node, Edge } from 'react-flow-renderer';
  * Node type enumeration
  * Defines the different types of nodes in a playbook flowchart
  */
-export type NodeType = 'phase' | 'step' | 'decision' | 'execute' | 'start' | 'end' | 'default';
+export type NodeType = 'phase' | 'step' | 'decision' | 'execute' | 'merge' | 'start' | 'end' | 'default';
 
 /**
  * Playbook node from API

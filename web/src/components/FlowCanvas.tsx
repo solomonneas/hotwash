@@ -13,7 +13,11 @@ import ReactFlow, {
   MiniMap,
   Connection,
   addEdge,
+  applyNodeChanges,
+  applyEdgeChanges,
   NodeTypes,
+  NodeChange,
+  EdgeChange,
   MarkerType,
   BackgroundVariant,
 } from 'react-flow-renderer';
@@ -22,6 +26,7 @@ import PhaseNode from './nodes/PhaseNode';
 import StepNode from './nodes/StepNode';
 import DecisionNode from './nodes/DecisionNode';
 import ExecuteNode from './nodes/ExecuteNode';
+import MergeNode from './nodes/MergeNode';
 import { PlaybookGraph, PlaybookTheme, FlowNode, FlowEdge } from '../types';
 
 import './FlowCanvas.css';
@@ -210,6 +215,7 @@ const FlowCanvas: React.FC<FlowCanvasProps> = ({ graph, theme, customNodeTypes }
       step: StepNode,
       decision: DecisionNode,
       execute: ExecuteNode,
+      merge: MergeNode,
     }),
     []
   );
@@ -217,6 +223,22 @@ const FlowCanvas: React.FC<FlowCanvasProps> = ({ graph, theme, customNodeTypes }
   const nodeTypes: NodeTypes = useMemo(
     () => (customNodeTypes ? { ...defaultNodeTypes, ...customNodeTypes } : defaultNodeTypes),
     [defaultNodeTypes, customNodeTypes]
+  );
+
+  // Handle node changes (drag, select, remove)
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      setNodes((nds) => applyNodeChanges(changes, nds));
+    },
+    []
+  );
+
+  // Handle edge changes (select, remove)
+  const onEdgesChange = useCallback(
+    (changes: EdgeChange[]) => {
+      setEdges((eds) => applyEdgeChanges(changes, eds));
+    },
+    []
   );
 
   // Handle connection creation
@@ -233,6 +255,8 @@ const FlowCanvas: React.FC<FlowCanvasProps> = ({ graph, theme, customNodeTypes }
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         fitView
         fitViewOptions={{ padding: 0.2 }}
@@ -258,6 +282,7 @@ const FlowCanvas: React.FC<FlowCanvasProps> = ({ graph, theme, customNodeTypes }
               case 'step': return nc.step.border;
               case 'decision': return nc.decision.border;
               case 'execute': return nc.execute.border;
+              case 'merge': return '#3bc9db';
               default: return activeTheme.colors.accent;
             }
           }}

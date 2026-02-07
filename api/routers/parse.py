@@ -5,13 +5,20 @@ Handles the POST /api/parse endpoint for converting markdown/mermaid text to flo
 """
 
 import re
+import sys
 from typing import Optional
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import JSONResponse
 from api.models import ParseRequest, ParseResponse, ParseMetadata, PlaybookNode, PlaybookEdge
 from api.parsers.markdown_parser import MarkdownParser
 from api.parsers.mermaid_parser import MermaidParser
 
 router = APIRouter()
+
+# Parsing limits
+MAX_CONTENT_SIZE = 100 * 1024  # 100KB
+MAX_NODES = 500
+MAX_EDGES = 1000
 
 
 def detect_format(content: str) -> str:
@@ -113,29 +120,47 @@ async def parse_content(request: ParseRequest):
 
     Raises:
         HTTPException: 400 if content is empty or parsing fails
-        HTTPException: 422 if format is invalid
+        HTTPException: 413 if content exceeds size limit
+        HTTPException: 422 if format is invalid or limits exceeded
     """
-    # Validate content
-    content = request.content.strip()
-    if not content:
-        raise HTTPException(
-            status_code=400,
-            detail="Content cannot be empty"
-        )
-
-    # Detect or validate format
-    if request.format is None:
-        format_type = detect_format(content)
-    else:
-        format_type = request.format.lower()
-        if format_type not in ['markdown', 'mermaid']:
-            raise HTTPException(
-                status_code=422,
-                detail=f"Invalid format '{request.format}'. Must be 'markdown' or 'mermaid'."
+    try:
+        # Check request body size (content size in bytes)
+        content_size = len(request.content.encode('utf-8'))
+        if content_size > MAX_CONTENT_SIZE:
+            return JSONResponse(
+                status_code=413,
+                content={
+                    "error": "Content too large",
+                    "detail": f"Request body size ({content_size} bytes) exceeds maximum allowed size ({MAX_CONTENT_SIZE} bytes / 100KB)."
+                }
             )
 
-    # Parse content based on format
-    try:
+        # Validate content
+        content = request.content.strip()
+        if not content:
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "error": "Empty content",
+                    "detail": "Content cannot be empty."
+                }
+            )
+
+        # Detect or validate format
+        if request.format is None:
+            format_type = detect_format(content)
+        else:
+            format_type = request.format.lower()
+            if format_type not in ['markdown', 'mermaid']:
+                return JSONResponse(
+                    status_code=422,
+                    content={
+                        "error": "Invalid format",
+                        "detail": f"Invalid format '{request.format}'. Must be 'markdown' or 'mermaid'."
+                    }
+                )
+
+        # Parse content based on format
         if format_type == 'markdown':
             parser = MarkdownParser()
             graph = parser.parse(content)
@@ -143,9 +168,31 @@ async def parse_content(request: ParseRequest):
             parser = MermaidParser()
             graph = parser.parse(content)
         else:
-            raise HTTPException(
+            return JSONResponse(
                 status_code=422,
-                detail=f"Unsupported format: {format_type}"
+                content={
+                    "error": "Unsupported format",
+                    "detail": f"Unsupported format: {format_type}"
+                }
+            )
+
+        # Enforce node/edge limits
+        if len(graph.nodes) > MAX_NODES:
+            return JSONResponse(
+                status_code=422,
+                content={
+                    "error": "Too many nodes",
+                    "detail": f"Parsed graph contains {len(graph.nodes)} nodes, which exceeds the maximum of {MAX_NODES}."
+                }
+            )
+
+        if len(graph.edges) > MAX_EDGES:
+            return JSONResponse(
+                status_code=422,
+                content={
+                    "error": "Too many edges",
+                    "detail": f"Parsed graph contains {len(graph.edges)} edges, which exceeds the maximum of {MAX_EDGES}."
+                }
             )
 
         # Extract metadata
@@ -167,27 +214,18 @@ async def parse_content(request: ParseRequest):
             metadata=metadata
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
-        # Handle parsing errors gracefully
+        # Return structured error response instead of raw exception trace
         error_message = str(e)
-
-        # Check for common parsing issues
-        if "invalid syntax" in error_message.lower():
-            raise HTTPException(
-                status_code=400,
-                detail=f"Malformed {format_type} syntax: {error_message}"
-            )
-        elif "unexpected" in error_message.lower():
-            raise HTTPException(
-                status_code=400,
-                detail=f"Unexpected content in {format_type}: {error_message}"
-            )
-        else:
-            # Generic parsing error
-            raise HTTPException(
-                status_code=400,
-                detail=f"Failed to parse {format_type} content: {error_message}"
-            )
+        return JSONResponse(
+            status_code=400,
+            content={
+                "error": "Parse failed",
+                "detail": f"Failed to parse content: {error_message}"
+            }
+        )
 
 
 @router.get("/formats")
@@ -198,17 +236,31 @@ async def list_supported_formats():
     Returns:
         Dictionary with supported formats and their descriptions
     """
-    return {
-        "formats": [
-            {
-                "name": "markdown",
-                "description": "Structured markdown with headers, lists, and code blocks",
-                "detection": "Default format when no flowchart/graph keyword is found"
-            },
-            {
-                "name": "mermaid",
-                "description": "Mermaid flowchart syntax (flowchart TD/LR or graph TD/LR)",
-                "detection": "Auto-detected when content starts with 'flowchart' or 'graph'"
+    try:
+        return {
+            "formats": [
+                {
+                    "name": "markdown",
+                    "description": "Structured markdown with headers, lists, and code blocks",
+                    "detection": "Default format when no flowchart/graph keyword is found"
+                },
+                {
+                    "name": "mermaid",
+                    "description": "Mermaid flowchart syntax (flowchart TD/LR or graph TD/LR)",
+                    "detection": "Auto-detected when content starts with 'flowchart' or 'graph'"
+                }
+            ],
+            "limits": {
+                "max_content_size_bytes": MAX_CONTENT_SIZE,
+                "max_nodes": MAX_NODES,
+                "max_edges": MAX_EDGES
             }
-        ]
-    }
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={
+                "error": "Internal error",
+                "detail": str(e)
+            }
+        )

@@ -9,6 +9,7 @@
 import React, { useState } from 'react';
 import FlowCanvas from '../components/FlowCanvas';
 import { PlaybookGraph } from '../types';
+import { apiUrl } from '../lib/api';
 import './ImportView.css';
 
 /**
@@ -83,7 +84,7 @@ const ImportView: React.FC = () => {
     setGraph(null);
 
     try {
-      const response = await fetch('http://localhost:8000/api/parse', {
+      const response = await fetch(apiUrl('/api/parse'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

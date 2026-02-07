@@ -145,6 +145,20 @@
   color: #f85149;
 }
 
+/* Merge Node - Teal theme for branch convergence */
+.merge-node {
+  border-color: #3bc9db;
+  background: linear-gradient(135deg, #1a2c3d 0%, #161b22 100%);
+}
+
+.merge-node .node-type-badge {
+  color: #66d9e8;
+}
+
+.merge-node:hover {
+  border-color: #66d9e8;
+}
+
 /* React Flow overrides for better integration */
 .react-flow__node.selected .custom-node {
   box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.4);
@@ -153,7 +167,8 @@
 .react-flow__node-phase,
 .react-flow__node-step,
 .react-flow__node-decision,
-.react-flow__node-execute {
+.react-flow__node-execute,
+.react-flow__node-merge {
   padding: 0;
   background: transparent;
   border: none;
