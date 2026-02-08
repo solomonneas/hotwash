@@ -3,7 +3,7 @@
  *
  * Root component with hash-based routing.
  * Routes:
- *   #/          → VariantPicker (landing)
+ *   #/          → VariantPicker (landing, or auto-redirect if default set)
  *   #/1 .. #/5  → Variant apps
  *   Legacy      → ImportView still accessible as a variant sub-page
  */
@@ -12,12 +12,23 @@ import React, { useEffect } from 'react';
 import './App.css';
 import { useHashRouter } from './router';
 import KeyboardHints from './components/KeyboardHints';
+import VariantSettings from './components/VariantSettings';
+import { useDefaultVariant } from './hooks/useDefaultVariant';
 import VariantPicker from './pages/VariantPicker';
 import V1App from './variants/v1';
 import V2App from './variants/v2';
 import V3App from './variants/v3';
 import V4App from './variants/v4';
 import V5App from './variants/v5';
+
+const APP_ID = 'playbook-forge';
+const VARIANT_NAMES = [
+  'Command Line',
+  'Blueprint',
+  'Tactical',
+  'Network Flow',
+  'Dark Grid',
+];
 
 const variantComponents: Record<number, React.FC<{ route: any; onNavigate: (path: string) => void }>> = {
   1: V1App,
@@ -29,7 +40,9 @@ const variantComponents: Record<number, React.FC<{ route: any; onNavigate: (path
 
 function App() {
   const { route, navigate, navigateTo } = useHashRouter();
+  const { defaultVariant, setDefaultVariant } = useDefaultVariant(APP_ID);
 
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
@@ -41,11 +54,30 @@ function App() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [navigateTo]);
 
+  // Auto-redirect if default variant is set
+  useEffect(() => {
+    if ((route.page === 'picker' || route.variant === null) && defaultVariant) {
+      navigateTo(defaultVariant);
+    }
+  }, [route.page, route.variant, defaultVariant, navigateTo]);
+
+  const sharedUI = (
+    <>
+      <KeyboardHints />
+      <VariantSettings
+        currentVariant={route.variant}
+        defaultVariant={defaultVariant}
+        onSetDefault={setDefaultVariant}
+        variantNames={VARIANT_NAMES}
+      />
+    </>
+  );
+
   // Variant picker (landing)
   if (route.page === 'picker' || route.variant === null) {
     return (
       <div className="App">
-        <KeyboardHints />
+        {sharedUI}
         <VariantPicker onSelect={(v) => navigateTo(v)} />
       </div>
     );
@@ -56,7 +88,7 @@ function App() {
   if (VariantApp) {
     return (
       <div className="App">
-        <KeyboardHints />
+        {sharedUI}
         <VariantApp route={route} onNavigate={navigate} />
       </div>
     );
@@ -65,7 +97,7 @@ function App() {
   // Fallback
   return (
     <div className="App">
-      <KeyboardHints />
+      {sharedUI}
       <VariantPicker onSelect={(v) => navigateTo(v)} />
     </div>
   );
