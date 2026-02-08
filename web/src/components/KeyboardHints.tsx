@@ -29,7 +29,7 @@ export const KeyboardHints: React.FC<KeyboardHintsProps> = ({
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement || (e.target instanceof HTMLElement && e.target.isContentEditable)) return;
       if (e.key === '?') {
         e.preventDefault();
         setOpen((o) => !o);
@@ -42,7 +42,7 @@ export const KeyboardHints: React.FC<KeyboardHintsProps> = ({
   // Show toast on variant switch
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement || (e.target instanceof HTMLElement && e.target.isContentEditable)) return;
       const num = parseInt(e.key);
       if (num >= 1 && num <= 5) {
         setToast(`Variant ${num}`);
@@ -80,7 +80,7 @@ export const KeyboardHints: React.FC<KeyboardHintsProps> = ({
             fontFamily: 'monospace',
             zIndex: 10001,
             pointerEvents: 'none',
-            animation: 'fadeIn 0.15s ease-out',
+            animation: kbhFadeIn 0.15s ease-out',
           }}
         >
           {toast}
@@ -141,7 +141,7 @@ export const KeyboardHints: React.FC<KeyboardHintsProps> = ({
               minWidth: 200,
               boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
               backdropFilter: 'blur(12px)',
-              animation: 'slideUp 0.15s ease-out',
+              animation: kbhSlideUp 0.15s ease-out',
             }}
           >
             <div
@@ -209,11 +209,11 @@ export const KeyboardHints: React.FC<KeyboardHintsProps> = ({
       )}
 
       <style>{`
-        @keyframes fadeIn {
+        @keyframes kbhFadeIn {
           from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
           to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
-        @keyframes slideUp {
+        @keyframes kbhSlideUp {
           from { opacity: 0; transform: translateY(8px); }
           to { opacity: 1; transform: translateY(0); }
         }
