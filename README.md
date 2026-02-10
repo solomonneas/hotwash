@@ -7,7 +7,7 @@
   <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="MIT License" />
 </p>
 
-# ⚒️ Playbook Forge
+# ⚒️ Solomon's Playbook Forge
 
 **SOC playbook parser and generator with Mermaid diagram support and interactive flowcharts.**
 
