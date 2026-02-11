@@ -1,237 +1,204 @@
-<div align="center">
+<p align="center">
+  <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=white" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Python-3.9+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="MIT License" />
+</p>
 
-# ⚒️ Playbook Forge
+# ⚒️ Solomon's Playbook Forge
 
-**Incident response playbook builder with interactive flowchart visualization**
+**SOC playbook parser and generator with Mermaid diagram support and interactive flowcharts.**
 
-[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Python](https://img.shields.io/badge/Python-3.9+-3776AB?logo=python&logoColor=white)](https://python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.109-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![ReactFlow](https://img.shields.io/badge/ReactFlow-10.3-FF0072?logo=react&logoColor=white)](https://reactflow.dev/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![Vite](https://img.shields.io/badge/Vite-5.0-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
-Transform Markdown and Mermaid playbooks into interactive, visual flowchart diagrams.  
-Built for SOC teams, incident responders, and security operations professionals.
+Playbook Forge transforms incident response playbooks from Markdown and Mermaid syntax into interactive flowchart visualizations. Perfect for SOC teams, incident responders, and security operations professionals who need playbooks they can actually follow.
 
 ![Playbook Forge](docs/screenshots/dashboard.png)
 
-</div>
+---
+
+## Features
+
+- **Markdown to Flowchart** - Parse structured Markdown playbooks into node-edge graphs
+- **Mermaid Syntax** - Native support for Mermaid flowchart syntax
+- **Interactive Canvas** - Drag, pan, zoom with React Flow
+- **Custom Node Types** - Phase, Step, Decision, Execute, Merge with 5 variant styles
+- **Playbook Library** - Browse, categorize, and filter by type (Vulnerability, Incident Response, Threat Hunting)
+- **SOAR Integration** - Built-in action library for incident response platforms
+- **MiniMap & Controls** - Bird's-eye view and viewport navigation
+- **Client-Side Parsing** - Zero-latency Markdown rendering in browser
+- **5 Visual Themes** - SOC, Analyst, Terminal, Command, Cyber variants
+- **Guided Tour** - Interactive walkthrough for first-time users
+- **Offline-First** - No backend required for visualization
 
 ---
 
-## ✨ Features
-
-- **Markdown → Flowchart** — Parse structured Markdown playbooks into interactive node-edge graphs
-- **Mermaid → Flowchart** — Convert Mermaid flowchart syntax to visual IR diagrams
-- **5 Unique UI Variants** — Each with distinct visual themes, layouts, and custom node designs
-- **Custom Node Types** — Phase, Step, Decision, Execute, and Merge nodes with variant-specific styling
-- **Playbook Library** — Browse, categorize, and filter playbooks by type (vulnerability remediation, IR, threat hunting, etc.)
-- **Import & Parse** — Paste or upload Markdown playbooks for instant visualization
-- **Interactive Canvas** — Drag, pan, zoom, and explore flowcharts with React Flow
-- **MiniMap & Controls** — Bird's-eye view and zoom controls on every flowchart
-- **Client-Side Parsing** — Zero-latency Markdown parsing directly in the browser
-- **In-App Documentation** — Built-in help pages covering playbook formats, node types, and IR methodology
-- **Guided Onboarding Tour** — Interactive walkthrough for first-time users via driver.js
-
-## 🏗️ Architecture
-
-```
-┌─────────────────────────────────────────────────────┐
-│                   React Frontend                     │
-│  ┌──────────┐  ┌───────────┐  ┌──────────────────┐ │
-│  │ Variant  │  │ Markdown  │  │  ReactFlow       │ │
-│  │ Layouts  │  │ Parser    │  │  FlowCanvas      │ │
-│  │ (V1–V5)  │  │ (client)  │  │  Custom Nodes    │ │
-│  └──────────┘  └───────────┘  └──────────────────┘ │
-│         │             │                │             │
-│         └─────────────┴────────────────┘             │
-│                       │                              │
-│              Hash Router (custom)                    │
-└───────────────────────┬─────────────────────────────┘
-                        │ REST API
-┌───────────────────────┴─────────────────────────────┐
-│                  FastAPI Backend                      │
-│  ┌──────────────┐  ┌────────────────────────────┐   │
-│  │ Markdown     │  │ Mermaid                    │   │
-│  │ Parser       │  │ Parser                     │   │
-│  └──────────────┘  └────────────────────────────┘   │
-│                  Pydantic Models                     │
-└─────────────────────────────────────────────────────┘
-```
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Python 3.9+
-- Node.js 16+
-- npm
-
-### Backend
+## Quick Start
 
 ```bash
+# Clone and install
+git clone https://github.com/solomonneas/playbook-forge.git
 cd playbook-forge
-pip install -r requirements.txt
-uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+
+# Frontend
+cd web && npm install && npm run dev
+
+# Backend (optional, for playbook generation AI)
+cd ../api && pip install -r requirements.txt && python main.py
 ```
 
-API available at `http://localhost:8000` · Swagger docs at `http://localhost:8000/docs`
+Frontend: **http://localhost:5177**
+Backend: **http://localhost:8000** (optional)
 
-### Frontend
+---
 
-```bash
-cd web
-npm install
-npm run dev
-```
-
-App available at `http://localhost:5173`
-
-### With Make
-
-```bash
-make install   # Install all dependencies
-make dev-api   # Start backend (terminal 1)
-make dev-web   # Start frontend (terminal 2)
-```
-
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
-| **Frontend** | React 18 | Component-based UI |
-| **Language** | TypeScript 5.3 | Type safety |
-| **Flowcharts** | react-flow-renderer | Interactive node-edge graphs |
-| **Styling** | Tailwind CSS 3.4 | Utility-first CSS |
-| **Bundler** | Vite 5 | Fast dev server & builds |
-| **Backend** | FastAPI 0.109 | REST API framework |
-| **Validation** | Pydantic 2.5 | Data models & validation |
-| **Parsing** | python-markdown | Markdown processing |
-| **Server** | Uvicorn | ASGI server |
+| **Frontend** | React 18 | Interactive dashboards |
+| **Language** | TypeScript 5 | Type safety |
+| **Styling** | Tailwind CSS 3 | Utility-first CSS |
+| **Canvas** | React Flow 11 | Node-edge graph visualization |
+| **State** | Zustand | Global state management |
+| **Bundler** | Vite 5 | Dev server and build |
+| **Backend** (Optional) | FastAPI | Playbook generation and storage |
+| **Parser** | Custom Markdown Parser | Inline playbook parsing |
 
-## 📁 Project Structure
+---
 
+## Playbook Syntax
+
+### Markdown Format
+
+```markdown
+# Incident Response: Ransomware Attack
+
+## Phase: Detection
+- Step: Identify affected systems
+  - Check EDR alerts
+  - Correlate with SIEM events
+  - Document initial indicators
+
+## Phase: Analysis
+- Decision: Is it a critical system?
+  - YES -> Execute: Isolate from network
+  - NO -> Execute: Begin forensic collection
+
+## Phase: Containment
+- Step: Isolate affected hosts
+  - Segment network access
+  - Disable user accounts
+  - Preserve evidence
+
+## Phase: Eradication
+- Step: Remove malware
+  - Scan with multiple AV engines
+  - Remove registry keys
+  - Patch vulnerabilities
+
+## Phase: Recovery
+- Step: Restore systems
+  - Restore from clean backups
+  - Apply security patches
+  - Re-enable user access
 ```
+
+### Mermaid Format
+
+```mermaid
+flowchart TD
+    A[Detection] --> B{Critical System?}
+    B -->|Yes| C[Isolate Network]
+    B -->|No| D[Preserve Evidence]
+    C --> E[Begin Analysis]
+    D --> E
+    E --> F[Eradicate Threat]
+    F --> G[Recover Systems]
+```
+
+---
+
+## Node Types
+
+| Type | Purpose | Example |
+|------|---------|---------|
+| **Phase** | Major incident response phase | Detection, Analysis, Containment |
+| **Step** | Procedural action | Execute EDR scan, Document findings |
+| **Decision** | Conditional branch (Yes/No) | Is it critical? Is malware present? |
+| **Execute** | SOAR action or tool integration | Isolate host, Disable account, Block IP |
+| **Merge** | Convergence point | Rejoining analysis paths |
+
+---
+
+## 5 Variants
+
+| Variant | Theme | Use Case |
+|---------|-------|----------|
+| **SOC** | Dark slate, red accents | Security operations center |
+| **Analyst** | Clean white, blue | Professional analysis |
+| **Terminal** | Black, matrix green | Technical incident response |
+| **Command** | OD green, amber | Military-style operations |
+| **Cyber** | Neon cyan/magenta | Cyberpunk aesthetic |
+
+All variants use the same parsing engine and React Flow canvas. Switch themes instantly.
+
+---
+
+## Project Structure
+
+```text
 playbook-forge/
-├── api/                          # FastAPI backend
-│   ├── main.py                   # App entry point, CORS, routes
-│   ├── models.py                 # Pydantic data models
-│   ├── parsers/                  # Markdown & Mermaid parsers
-│   ├── routers/                  # API route handlers
-│   └── tests/                    # Backend test suite
-├── web/                          # React frontend
-│   ├── index.html                # Entry HTML
-│   ├── package.json
+├── web/                      # React frontend
 │   ├── src/
-│   │   ├── App.tsx               # Root component + routing
-│   │   ├── router/               # Custom hash-based router
-│   │   │   ├── routes.ts         # Route definitions & matching
-│   │   │   └── useHashRouter.ts  # React hook for hash routing
-│   │   ├── components/           # Shared components
-│   │   │   ├── FlowCanvas.tsx    # ReactFlow canvas wrapper
-│   │   │   ├── GuidedTour.tsx    # driver.js onboarding tour
-│   │   │   └── nodes/            # Base node types (Phase, Step, Decision, ...)
-│   │   ├── pages/                # Shared pages
-│   │   │   ├── VariantPicker.tsx # Landing page (variant selector)
-│   │   │   ├── DocsPage.tsx      # In-app documentation
-│   │   │   └── DocsPage.css
-│   │   ├── variants/             # 5 UI variants
-│   │   │   ├── v1/               # Technical Manual / Field Guide
-│   │   │   ├── v2/               # Dark SOC Operator / Mission Control
-│   │   │   ├── v3/               # Clean Documentation / Knowledge Base
-│   │   │   ├── v4/               # Interactive Blueprint / Engineering Schematic
-│   │   │   └── v5/               # Minimal Academic / Research Paper
-│   │   ├── data/                 # Template playbooks & sample data
-│   │   ├── hooks/                # Custom React hooks
-│   │   ├── parsers/              # Client-side Markdown parser
-│   │   ├── lib/                  # API client
-│   │   └── types/                # TypeScript type definitions
+│   │   ├── components/
+│   │   │   ├── Canvas.tsx       # React Flow canvas
+│   │   │   ├── NodeEditor.tsx   # Custom node properties panel
+│   │   │   ├── PlaybookLibrary.tsx
+│   │   │   └── ...
+│   │   ├── pages/
+│   │   │   ├── Editor.tsx       # Main editing interface
+│   │   │   ├── Library.tsx      # Playbook browser
+│   │   │   └── Settings.tsx
+│   │   ├── parsers/
+│   │   │   ├── markdownParser.ts  # Markdown to graph converter
+│   │   │   ├── mermaidParser.ts   # Mermaid parser
+│   │   │   └── validator.ts
+│   │   ├── store/
+│   │   │   └── usePlaybookStore.ts # Zustand (persisted)
+│   │   └── variants/            # 5 theme layouts
+│   ├── package.json
 │   └── vite.config.ts
-├── requirements.txt              # Python dependencies
-├── Makefile                      # Dev commands
+├── api/                      # FastAPI backend (optional)
+│   ├── main.py               # Entry point
+│   ├── playbooks/            # Playbook storage
+│   ├── generator/            # AI-powered generation
+│   └── requirements.txt
 └── README.md
 ```
 
-## 🎨 5 UI Variants
+---
 
-Each variant provides a complete, themed experience with its own layout, CSS, custom node components, and page implementations:
+## SOAR Actions
 
-| Variant | Theme | Description |
-|---------|-------|-------------|
-| **V1** — Classic | Technical Manual / Field Guide | Military field manual aesthetic with classification banners, sidebar TOC, section numbering, Courier Prime typewriter font |
-| **V2** — Command Center | Dark SOC Operator | Deep navy base, electric cyan accents, persistent status bar with live metrics, compact sidebar, JetBrains Mono |
-| **V3** — Notebook | Clean Documentation | GitBook/Notion-inspired with expandable sidebar, breadcrumbs, Literata serif for reading, Inter for UI |
-| **V4** — Blueprint | Engineering Schematic | Blueprint blue backgrounds, CSS grid overlay, tick-mark drawing border, title block, IBM Plex Mono |
-| **V5** — Minimal | Academic Research Paper | Pure white, centered 720px column, Crimson Pro serif, Fraunces headings, printable, no decorations |
+Built-in action library for common SOAR platforms:
 
-Navigate between variants from the landing page at `#/`.
+**Incident Response Actions:**
+- `isolate_host` - Remove host from network
+- `disable_account` - Disable user account
+- `block_ioc` - Block IP/domain/hash
+- `snapshot_vm` - Create VM snapshot
+- `quarantine_email` - Isolate email message
 
-## 📄 Playbook Formats
+**Reconnaissance:**
+- `whois_lookup` - IP/domain registration info
+- `virustotal_check` - File hash reputation
+- `shodan_search` - Internet scan results
 
-### Markdown
+All actions are templates that teams can customize.
 
-Playbooks are structured Markdown documents with hierarchical headings that map to flowchart nodes:
+---
 
-```markdown
-# Vulnerability Remediation: Python
+## License
 
-## Phase 1: Identification
-### Step 1.1: Scan Dependencies
-Run `pip audit` to identify known vulnerabilities.
-
-### Step 1.2: Review CVE Database
-Cross-reference findings with NVD/MITRE.
-
-## Phase 2: Assessment
-### Decision: Severity Check
-- **Critical/High** → Immediate patching
-- **Medium/Low** → Schedule for next sprint
-
-## Phase 3: Remediation
-### Execute: Apply Patches
-Update affected packages and run regression tests.
-```
-
-**Heading → Node Type Mapping:**
-
-| Markdown Pattern | Node Type | Description |
-|-----------------|-----------|-------------|
-| `# Title` | — | Playbook title / metadata |
-| `## Phase N: ...` | Phase | Major IR phase grouping |
-| `### Step N.N: ...` | Step | Individual action step |
-| `### Decision: ...` | Decision | Branch point with conditions |
-| `### Execute: ...` | Execute | Automated/manual execution task |
-
-### Mermaid
-
-Mermaid flowchart syntax is also supported for direct graph definitions:
-
-```mermaid
-graph TD
-    A[Start: Alert Received] --> B{Severity?}
-    B -->|Critical| C[Escalate to IR Team]
-    B -->|Low| D[Log and Monitor]
-    C --> E[Contain Threat]
-    E --> F[Eradicate & Recover]
-    F --> G[Post-Incident Review]
-    D --> G
-```
-
-## 📋 Pages Per Variant
-
-Each variant includes four pages accessible via hash routing:
-
-| Route | Page | Description |
-|-------|------|-------------|
-| `#/N` | Dashboard | Overview statistics, category breakdown, aggregate metrics |
-| `#/N/library` | Library | Playbook catalog with category filtering and search |
-| `#/N/playbook/:slug` | Playbook Viewer | Interactive flowchart + Markdown rendering |
-| `#/N/import` | Import | Paste Markdown for instant parsing and visualization |
-| `#/N/docs` | Documentation | In-app help covering formats, nodes, and methodology |
-
-## 📝 License
-
-[MIT](LICENSE) — Built for the SOC community.
+MIT - see [LICENSE](LICENSE) for details.
