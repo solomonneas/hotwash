@@ -131,3 +131,32 @@ class SharedPlaybookResponse(PlaybookDetail):
 # Backwards-compatible naming expected by some clients/docs.
 class PlaybookResponse(PlaybookDetail):
     pass
+
+
+# --- Integration schemas ---
+
+class IntegrationOut(BaseModel):
+    """Integration output schema (no secrets)."""
+    model_config = ConfigDict(from_attributes=True)
+
+    tool_name: str
+    display_name: str
+    base_url: str
+    enabled: bool
+    verify_ssl: bool
+    mock_mode: bool
+    last_checked: Optional[datetime] = None
+    last_status: str
+    has_api_key: bool
+    has_credentials: bool
+
+
+class IntegrationUpdate(BaseModel):
+    """Integration update input schema."""
+    base_url: Optional[str] = None
+    api_key: Optional[str] = None
+    username: Optional[str] = None
+    password: Optional[str] = None
+    enabled: Optional[bool] = None
+    verify_ssl: Optional[bool] = None
+    mock_mode: Optional[bool] = None

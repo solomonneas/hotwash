@@ -40,6 +40,11 @@ export function matchRoute(hash: string): RouteMatch {
     return { path, variant: null, page: 'picker', params: {} };
   }
 
+  // AI Generate
+  if (path === '/ai/generate') {
+    return { path, variant: null, page: 'ai-generate', params: {} };
+  }
+
   // Global library
   if (path === '/library') {
     return { path, variant: null, page: 'library', params: {} };
@@ -54,6 +59,28 @@ export function matchRoute(hash: string): RouteMatch {
       page: 'editor',
       params: editorMatch[1] ? { id: editorMatch[1] } : {},
     };
+  }
+
+  // Global integrations
+  if (path === '/integrations') {
+    return { path, variant: null, page: 'integrations', params: {} };
+  }
+
+  // Executions list
+  if (path === '/executions') {
+    return { path, variant: null, page: 'executions', params: {} };
+  }
+
+  // Execution report
+  const execReportMatch = path.match(/^\/executions\/(.+)\/report$/);
+  if (execReportMatch) {
+    return { path, variant: null, page: 'execution-report', params: { id: execReportMatch[1] } };
+  }
+
+  // Execution view
+  const execViewMatch = path.match(/^\/executions\/(.+)$/);
+  if (execViewMatch) {
+    return { path, variant: null, page: 'execution-view', params: { id: execViewMatch[1] } };
   }
 
   // Global import

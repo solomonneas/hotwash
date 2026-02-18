@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 
 from api.database import init_db
 from api.seed import seed_db
-from api.routers import export, parse, playbooks
+from api.routers import export, integrations, parse, playbooks
 
 app = FastAPI(
     title="Playbook Forge API",
@@ -34,6 +34,7 @@ app.add_middleware(
 app.include_router(parse.router, prefix="/api", tags=["parse"])
 app.include_router(playbooks.router, prefix="/api", tags=["playbooks"])
 app.include_router(export.router, prefix="/api", tags=["export"])
+app.include_router(integrations.router, prefix="/api", tags=["integrations"])
 
 
 @app.on_event("startup")

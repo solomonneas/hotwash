@@ -16,6 +16,8 @@ import {
 } from '../api/client';
 import { allPlaybooks } from '../data';
 import { useHashRouter } from '../router';
+import AIImprovePanel from '../components/AIImprovePanel';
+import ATTACKMappingPanel from '../components/ATTACKMappingPanel';
 
 interface EditorPageProps {
   playbookId?: string;
@@ -48,6 +50,8 @@ const EditorPage: React.FC<EditorPageProps> = ({ playbookId }) => {
   const [toast, setToast] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
+  const [improveOpen, setImproveOpen] = useState(false);
+  const [attackOpen, setAttackOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
   const shareRef = useRef<HTMLDivElement>(null);
 
@@ -333,6 +337,23 @@ const EditorPage: React.FC<EditorPageProps> = ({ playbookId }) => {
                 )}
               </div>
 
+              {currentId && (
+                <>
+                  <button
+                    className="px-3 py-2 rounded-md border border-purple-500/40 bg-purple-500/10 text-sm text-purple-200 hover:bg-purple-500/20"
+                    onClick={() => setImproveOpen(true)}
+                  >
+                    🤖 Improve
+                  </button>
+                  <button
+                    className="px-3 py-2 rounded-md border border-red-500/30 bg-red-500/10 text-sm text-red-200 hover:bg-red-500/20"
+                    onClick={() => setAttackOpen(true)}
+                  >
+                    🎯 ATT&CK
+                  </button>
+                </>
+              )}
+
               <button
                 className="px-4 py-2 rounded-md bg-blue-600 text-sm text-white hover:bg-blue-500 disabled:opacity-60"
                 onClick={handleSave}
@@ -427,6 +448,22 @@ const EditorPage: React.FC<EditorPageProps> = ({ playbookId }) => {
           )}
         </div>
       </div>
+
+      {improveOpen && currentId && (
+        <AIImprovePanel
+          playbookId={currentId}
+          playbookTitle={title || 'Untitled'}
+          onClose={() => setImproveOpen(false)}
+        />
+      )}
+
+      {attackOpen && currentId && (
+        <ATTACKMappingPanel
+          playbookId={currentId}
+          playbookTitle={title || 'Untitled'}
+          onClose={() => setAttackOpen(false)}
+        />
+      )}
     </div>
   );
 };

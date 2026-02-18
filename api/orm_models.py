@@ -135,3 +135,7 @@ class PlaybookVersion(Base):
 
     def __repr__(self) -> str:
         return f"<PlaybookVersion(playbook_id={self.playbook_id}, v={self.version_number})>"
+
+
+# Import Integration so it shares the same Base.metadata
+from api.integrations.config import Integration  # noqa: E402, F401

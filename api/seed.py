@@ -137,6 +137,27 @@ def _collect_tags(content: str) -> Set[str]:
     return tags
 
 
+def seed_integrations(db: Session) -> int:
+    """Seed default integrations if none exist."""
+    from api.integrations.config import Integration, DEFAULT_INTEGRATIONS
+
+    existing = db.query(Integration).count()
+    if existing > 0:
+        return 0
+
+    for item in DEFAULT_INTEGRATIONS:
+        db.add(Integration(
+            tool_name=item["tool_name"],
+            display_name=item["display_name"],
+            mock_mode=True,
+            enabled=False,
+            verify_ssl=True,
+            last_status="unchecked",
+        ))
+    db.commit()
+    return len(DEFAULT_INTEGRATIONS)
+
+
 def seed(db: Session) -> int:
     """Seed the database if empty. Returns number of playbooks inserted."""
     existing_count = db.query(Playbook).count()
@@ -180,6 +201,7 @@ def seed_db() -> int:
     """Convenience wrapper to seed with its own DB session."""
     db = SessionLocal()
     try:
+        seed_integrations(db)
         return seed(db)
     finally:
         db.close()

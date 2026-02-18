@@ -19,6 +19,11 @@ import LibraryPage from './pages/LibraryPage';
 import EditorPage from './pages/EditorPage';
 import ImportPage from './pages/ImportPage';
 import SharedPage from './pages/SharedPage';
+import IntegrationsPage from './pages/IntegrationsPage';
+import ExecutionsPage from './pages/ExecutionsPage';
+import ExecutionViewPage from './pages/ExecutionViewPage';
+import ReportPage from './pages/ReportPage';
+import AIGeneratePage from './pages/AIGeneratePage';
 import V1App from './variants/v1';
 import V2App from './variants/v2';
 import V3App from './variants/v3';
@@ -100,6 +105,16 @@ function App() {
 
   // Variant picker (landing)
   if (route.page === 'picker' || route.variant === null) {
+    if (route.page === 'ai-generate') {
+      return (
+        <div className="App">
+          {sharedUI}
+          <AIGeneratePage />
+          <GitHubFooter />
+        </div>
+      );
+    }
+
     if (route.page === 'library') {
       return (
         <div className="App">
@@ -115,6 +130,46 @@ function App() {
         <div className="App">
           {sharedUI}
           <EditorPage playbookId={route.params.id} />
+          <GitHubFooter />
+        </div>
+      );
+    }
+
+    if (route.page === 'integrations') {
+      return (
+        <div className="App">
+          {sharedUI}
+          <IntegrationsPage />
+          <GitHubFooter />
+        </div>
+      );
+    }
+
+    if (route.page === 'executions') {
+      return (
+        <div className="App">
+          {sharedUI}
+          <ExecutionsPage />
+          <GitHubFooter />
+        </div>
+      );
+    }
+
+    if (route.page === 'execution-view') {
+      return (
+        <div className="App">
+          {sharedUI}
+          <ExecutionViewPage executionId={route.params.id} />
+          <GitHubFooter />
+        </div>
+      );
+    }
+
+    if (route.page === 'execution-report') {
+      return (
+        <div className="App">
+          {sharedUI}
+          <ReportPage executionId={route.params.id} />
           <GitHubFooter />
         </div>
       );

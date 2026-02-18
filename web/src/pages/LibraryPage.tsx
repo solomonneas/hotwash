@@ -7,6 +7,7 @@ import { useHashRouter } from '../router';
 import { listPlaybooks, deletePlaybook, ApiPlaybookSummary } from '../api/client';
 import { allPlaybooks } from '../data';
 import { PlaybookLibraryItem } from '../types';
+import AIImprovePanel from '../components/AIImprovePanel';
 
 interface LibraryPlaybook {
   id: string;
@@ -38,6 +39,7 @@ const LibraryPage: React.FC = () => {
   const [activeTag, setActiveTag] = useState<string>('all');
   const [deleteTarget, setDeleteTarget] = useState<LibraryPlaybook | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [improveTarget, setImproveTarget] = useState<LibraryPlaybook | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -111,6 +113,24 @@ const LibraryPage: React.FC = () => {
               </p>
             </div>
             <div className="flex gap-3">
+              <button
+                className="px-4 py-2 rounded-md bg-gradient-to-r from-purple-600/80 to-blue-600/80 border border-purple-500/30 text-white hover:from-purple-500/80 hover:to-blue-500/80 shadow-sm shadow-purple-500/10"
+                onClick={() => navigate('#/ai/generate')}
+              >
+                ✨ AI Generate
+              </button>
+              <button
+                className="px-4 py-2 rounded-md bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700"
+                onClick={() => navigate('#/executions')}
+              >
+                Executions
+              </button>
+              <button
+                className="px-4 py-2 rounded-md bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700"
+                onClick={() => navigate('#/integrations')}
+              >
+                Integrations
+              </button>
               <button
                 className="px-4 py-2 rounded-md bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700"
                 onClick={() => navigate('#/import')}
@@ -229,6 +249,25 @@ const LibraryPage: React.FC = () => {
                       Edit
                     </button>
                     <button
+                      className="px-3 py-1 rounded-md border border-green-500/40 bg-green-500/10 text-xs text-green-200 hover:bg-green-500/20"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`#/executions?playbook=${encodeURIComponent(item.id)}`);
+                      }}
+                    >
+                      ▶ Execute
+                    </button>
+                    <button
+                      className="px-3 py-1 rounded-md border border-purple-500/40 bg-purple-500/10 text-xs text-purple-200 hover:bg-purple-500/20"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setImproveTarget(item);
+                      }}
+                      title="Improve with AI"
+                    >
+                      🤖
+                    </button>
+                    <button
                       className="px-3 py-1 rounded-md border border-red-500/40 bg-red-500/10 text-xs text-red-200 hover:bg-red-500/20"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -250,6 +289,14 @@ const LibraryPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {improveTarget && (
+        <AIImprovePanel
+          playbookId={improveTarget.id}
+          playbookTitle={improveTarget.title}
+          onClose={() => setImproveTarget(null)}
+        />
+      )}
 
       {deleteTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
