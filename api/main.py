@@ -8,7 +8,9 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from api.routers import parse
+from api.database import init_db
+from api.seed import seed_db
+from api.routers import parse, playbooks
 
 app = FastAPI(
     title="Playbook Forge API",
@@ -19,7 +21,10 @@ app = FastAPI(
 # CORS middleware for React frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React dev server
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:5177",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -27,6 +32,13 @@ app.add_middleware(
 
 # Register routers
 app.include_router(parse.router, prefix="/api", tags=["parse"])
+app.include_router(playbooks.router, prefix="/api", tags=["playbooks"])
+
+
+@app.on_event("startup")
+def startup_event():
+    init_db()
+    seed_db()
 
 
 @app.exception_handler(Exception)

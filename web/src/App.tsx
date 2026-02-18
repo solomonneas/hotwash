@@ -15,6 +15,8 @@ import KeyboardHints from './components/KeyboardHints';
 import VariantSettings from './components/VariantSettings';
 import { useDefaultVariant } from './hooks/useDefaultVariant';
 import VariantPicker from './pages/VariantPicker';
+import LibraryPage from './pages/LibraryPage';
+import EditorPage from './pages/EditorPage';
 import V1App from './variants/v1';
 import V2App from './variants/v2';
 import V3App from './variants/v3';
@@ -77,7 +79,7 @@ function App() {
 
   // Auto-redirect if default variant is set
   useEffect(() => {
-    if ((route.page === 'picker' || route.variant === null) && defaultVariant) {
+    if (route.page === 'picker' && defaultVariant) {
       navigateTo(defaultVariant);
     }
   }, [route.page, route.variant, defaultVariant, navigateTo]);
@@ -96,6 +98,26 @@ function App() {
 
   // Variant picker (landing)
   if (route.page === 'picker' || route.variant === null) {
+    if (route.page === 'library') {
+      return (
+        <div className="App">
+          {sharedUI}
+          <LibraryPage />
+          <GitHubFooter />
+        </div>
+      );
+    }
+
+    if (route.page === 'editor') {
+      return (
+        <div className="App">
+          {sharedUI}
+          <EditorPage playbookId={route.params.id} />
+          <GitHubFooter />
+        </div>
+      );
+    }
+
     return (
       <div className="App">
         {sharedUI}

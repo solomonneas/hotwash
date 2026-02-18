@@ -4,6 +4,9 @@
  * Hash-based routing (no react-router-dom dependency).
  * Routes:
  *   /              → Variant picker (landing page)
+ *   /library       → Global playbook library
+ *   /editor        → Create new playbook
+ *   /editor/:id    → Edit existing playbook
  *   /1 .. /5       → Variant app root
  *   /N/library     → Playbook library for variant N
  *   /N/playbook/:slug → View specific playbook
@@ -33,6 +36,22 @@ export function matchRoute(hash: string): RouteMatch {
   // Root: variant picker
   if (path === '/') {
     return { path, variant: null, page: 'picker', params: {} };
+  }
+
+  // Global library
+  if (path === '/library') {
+    return { path, variant: null, page: 'library', params: {} };
+  }
+
+  // Global editor
+  const editorMatch = path.match(/^\/editor(?:\/(.+))?$/);
+  if (editorMatch) {
+    return {
+      path,
+      variant: null,
+      page: 'editor',
+      params: editorMatch[1] ? { id: editorMatch[1] } : {},
+    };
   }
 
   // Match variant prefix: /1 .. /5
