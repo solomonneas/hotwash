@@ -4,6 +4,11 @@
  * Hash-based routing (no react-router-dom dependency).
  * Routes:
  *   /              → Variant picker (landing page)
+ *   /library       → Global playbook library
+ *   /editor        → Create new playbook
+ *   /editor/:id    → Edit existing playbook
+ *   /import        → Import playbooks (JSON/Markdown)
+ *   /shared/:token → Read-only shared playbook view
  *   /1 .. /5       → Variant app root
  *   /N/library     → Playbook library for variant N
  *   /N/playbook/:slug → View specific playbook
@@ -17,7 +22,7 @@ export interface RouteMatch {
   path: string;
   /** Variant number 1-5 or null for root */
   variant: number | null;
-  /** Page identifier: 'picker' | 'home' | 'library' | 'playbook' | 'import' | 'dashboard' | 'docs' */
+  /** Page identifier: 'picker' | 'home' | 'library' | 'playbook' | 'import' | 'editor' | 'shared' | 'dashboard' | 'docs' */
   page: string;
   /** Dynamic parameters (e.g., { slug: 'vulnerability-remediation-python' }) */
   params: Record<string, string>;
@@ -33,6 +38,65 @@ export function matchRoute(hash: string): RouteMatch {
   // Root: variant picker
   if (path === '/') {
     return { path, variant: null, page: 'picker', params: {} };
+  }
+
+  // AI Generate
+  if (path === '/ai/generate') {
+    return { path, variant: null, page: 'ai-generate', params: {} };
+  }
+
+  // Global library
+  if (path === '/library') {
+    return { path, variant: null, page: 'library', params: {} };
+  }
+
+  // Global editor
+  const editorMatch = path.match(/^\/editor(?:\/(.+))?$/);
+  if (editorMatch) {
+    return {
+      path,
+      variant: null,
+      page: 'editor',
+      params: editorMatch[1] ? { id: editorMatch[1] } : {},
+    };
+  }
+
+  // Global integrations
+  if (path === '/integrations') {
+    return { path, variant: null, page: 'integrations', params: {} };
+  }
+
+  // Executions list
+  if (path === '/executions') {
+    return { path, variant: null, page: 'executions', params: {} };
+  }
+
+  // Execution report
+  const execReportMatch = path.match(/^\/executions\/(.+)\/report$/);
+  if (execReportMatch) {
+    return { path, variant: null, page: 'execution-report', params: { id: execReportMatch[1] } };
+  }
+
+  // Execution view
+  const execViewMatch = path.match(/^\/executions\/(.+)$/);
+  if (execViewMatch) {
+    return { path, variant: null, page: 'execution-view', params: { id: execViewMatch[1] } };
+  }
+
+  // Global import
+  if (path === '/import') {
+    return { path, variant: null, page: 'import', params: {} };
+  }
+
+  // Shared playbook view
+  const sharedMatch = path.match(/^\/shared\/(.+)$/);
+  if (sharedMatch) {
+    return {
+      path,
+      variant: null,
+      page: 'shared',
+      params: { token: sharedMatch[1] },
+    };
   }
 
   // Match variant prefix: /1 .. /5
