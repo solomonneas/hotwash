@@ -9,9 +9,9 @@
 
 # ⚒️ Solomon's Playbook Forge
 
-**SOC playbook parser and generator with Mermaid diagram support and interactive flowcharts.**
+**IR runbook builder with visual flowcharts, SOAR execution engine, and AI playbook generation.**
 
-Playbook Forge transforms incident response playbooks from Markdown and Mermaid syntax into interactive flowchart visualizations. Perfect for SOC teams, incident responders, and security operations professionals who need playbooks they can actually follow.
+Playbook Forge transforms incident response playbooks from Markdown and Mermaid syntax into interactive flowchart visualizations with a full execution engine. SOC teams can build, execute, and track playbook runs step-by-step. AI generation creates playbooks from natural language prompts. SOAR integrations connect to real response platforms.
 
 ![Playbook Forge](docs/screenshots/dashboard.png)
 
@@ -24,7 +24,10 @@ Playbook Forge transforms incident response playbooks from Markdown and Mermaid 
 - **Interactive Canvas** - Drag, pan, zoom with React Flow
 - **Custom Node Types** - Phase, Step, Decision, Execute, Merge with 5 variant styles
 - **Playbook Library** - Browse, categorize, and filter by type (Vulnerability, Incident Response, Threat Hunting)
-- **SOAR Integration** - Built-in action library for incident response platforms
+- **Execution Engine** - Run playbooks step-by-step with live status tracking, timestamps, and execution history
+- **AI Playbook Generation** - Generate complete playbooks from natural language incident descriptions
+- **SOAR Integration** - Built-in action library with connections to real response platforms
+- **MCP Integration** - Model Context Protocol hooks for AI-assisted execution
 - **MiniMap & Controls** - Bird's-eye view and viewport navigation
 - **Client-Side Parsing** - Zero-latency Markdown rendering in browser
 - **5 Visual Themes** - SOC, Analyst, Terminal, Command, Cyber variants
