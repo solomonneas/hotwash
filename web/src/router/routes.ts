@@ -83,6 +83,22 @@ export function matchRoute(hash: string): RouteMatch {
     return { path, variant: null, page: 'execution-view', params: { id: execViewMatch[1] } };
   }
 
+  // Suggestion view (must come before list match since both share prefix)
+  const suggestionViewMatch = path.match(/^\/suggestions\/([^/?]+)(?:\?.*)?$/);
+  if (suggestionViewMatch) {
+    return {
+      path,
+      variant: null,
+      page: 'suggestion-view',
+      params: { id: suggestionViewMatch[1] },
+    };
+  }
+
+  // Suggestions list (allow optional query suffix)
+  if (path === '/suggestions' || path.startsWith('/suggestions?')) {
+    return { path, variant: null, page: 'suggestions', params: {} };
+  }
+
   // Global import
   if (path === '/import') {
     return { path, variant: null, page: 'import', params: {} };

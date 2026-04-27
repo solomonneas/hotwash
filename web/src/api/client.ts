@@ -98,12 +98,15 @@ async function parseJsonSafe(response: Response): Promise<any | null> {
   }
 }
 
+export const API_KEY: string | undefined = import.meta.env.VITE_HOTWASH_API_KEY;
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${path}`;
   const response = await fetch(url, {
     ...options,
     headers: {
       ...jsonHeaders,
+      ...(API_KEY ? { 'X-API-Key': API_KEY } : {}),
       ...(options.headers || {}),
     },
   });
@@ -290,4 +293,110 @@ export function revokeShareLink(id: string | number): Promise<{ success?: boolea
 
 export function getSharedPlaybook(token: string): Promise<ApiPlaybook> {
   return request<ApiPlaybook>(`/api/shared/${encodeURIComponent(token)}`);
+}
+
+// --- Ingest suggestion schemas (mirror api/schemas.py) ---
+
+export interface ApiMappingRef {
+  id: number;
+  name: string;
+  playbook_id: number;
+  mode: string;
+  rule_id_pattern?: string | null;
+  rule_groups_pattern?: string | null;
+  agent_name_pattern?: string | null;
+  cooldown_seconds: number;
+  has_hmac_secret: boolean;
+  enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ApiSuggestionSummary {
+  id: number;
+  mapping_id: number;
+  playbook_id: number;
+  state: string;
+  fingerprint: string;
+  rule_id?: string | null;
+  agent_id?: string | null;
+  agent_name?: string | null;
+  description?: string | null;
+  accepted_execution_id?: number | null;
+  created_at: string;
+  resolved_at?: string | null;
+}
+
+export interface ApiSuggestionDetail extends ApiSuggestionSummary {
+  alert_payload: Record<string, any>;
+  mapping: ApiMappingRef;
+  playbook_title?: string | null;
+}
+
+export interface ApiExecutionSummary {
+  id: number;
+  playbook_id: number;
+  playbook_title?: string | null;
+  incident_title: string;
+  incident_id?: string | null;
+  status: string;
+  started_by?: string | null;
+  started_at: string;
+  completed_at?: string | null;
+  steps_total?: number;
+  steps_completed?: number;
+}
+
+export interface ApiSuggestionAcceptResponse {
+  execution: ApiExecutionSummary;
+  already_accepted: boolean;
+}
+
+export interface ListSuggestionsFilters {
+  state?: string;
+  mapping_id?: number;
+}
+
+export function listSuggestions(
+  filters: ListSuggestionsFilters = {}
+): Promise<ApiSuggestionSummary[]> {
+  const params = new URLSearchParams();
+  if (filters.state) params.set('state', filters.state);
+  if (filters.mapping_id !== undefined && !Number.isNaN(filters.mapping_id)) {
+    params.set('mapping_id', String(filters.mapping_id));
+  }
+  const qs = params.toString();
+  return request<ApiSuggestionSummary[]>(
+    `/api/ingest/suggestions${qs ? `?${qs}` : ''}`
+  );
+}
+
+export function getSuggestion(id: number | string): Promise<ApiSuggestionDetail> {
+  return request<ApiSuggestionDetail>(
+    `/api/ingest/suggestions/${encodeURIComponent(String(id))}`
+  );
+}
+
+export function acceptSuggestion(
+  id: number | string
+): Promise<ApiSuggestionAcceptResponse> {
+  return request<ApiSuggestionAcceptResponse>(
+    `/api/ingest/suggestions/${encodeURIComponent(String(id))}/accept`,
+    { method: 'POST' }
+  );
+}
+
+export function dismissSuggestion(
+  id: number | string,
+  reason?: string
+): Promise<ApiSuggestionSummary> {
+  const trimmed = typeof reason === 'string' ? reason.trim() : '';
+  const init: RequestInit = { method: 'POST' };
+  if (trimmed.length > 0) {
+    init.body = JSON.stringify({ reason: trimmed });
+  }
+  return request<ApiSuggestionSummary>(
+    `/api/ingest/suggestions/${encodeURIComponent(String(id))}/dismiss`,
+    init
+  );
 }

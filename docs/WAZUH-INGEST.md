@@ -221,6 +221,60 @@ a human reviewer brings. Accept is exposed because its worst outcome is a
 playbook run that a human can cancel; dismiss has no safe undo within the
 cooldown window. Dismiss remains a human-only action via the REST API.
 
+## Reviewing the queue (web UI)
+
+The route `/suggestions` is the analyst-facing queue. It lists pending
+suggestions by default and links to a detail view for each one. Both the list
+and detail pages are wrappers over the REST endpoints above; nothing the UI
+does is unavailable to a `curl` user.
+
+**Filters.** The list page exposes two filters that round-trip through the URL
+hash so a view can be linked or bookmarked:
+
+- `state`: one of `pending`, `accepted`, `dismissed`, or `all`. Defaults to
+  `pending`.
+- `mapping_id`: free-text integer. Restricts the queue to suggestions raised
+  by one mapping. Empty means no restriction.
+
+The page polls while `state=pending` is selected so newly arrived alerts
+appear without a manual refresh; switching to any other filter pauses
+polling.
+
+**Accept flow.** From the list, click View on a row to open the detail page.
+The detail page shows the parsed alert payload, the matched mapping, and the
+playbook that will be started. Click Accept and confirm in the dialog. The UI
+calls `POST /api/ingest/suggestions/:id/accept`, which creates an Execution
+and returns its id, then navigates to the run view for that Execution. Accept
+is idempotent end to end: re-accepting an already-accepted suggestion returns
+the same `execution_id` (no duplicate run is created) and the UI navigates to
+that existing run.
+
+**Dismiss flow.** From the detail page, click Dismiss to open the dismiss
+panel. The reason field is optional and capped at 500 characters; a counter
+shows remaining length. Submitting calls `POST
+/api/ingest/suggestions/:id/dismiss`, which writes a `suggestion_dismissed`
+row to the suppression log and anchors the cooldown window for that
+fingerprint. The same alert fingerprint will not immediately re-fire while
+the cooldown is active, which is the intended outcome when a reviewer marks a
+suggestion as noise.
+
+**410 Gone.** If the underlying mapping was hard-deleted between suggestion
+creation and the moment a reviewer opens the detail page, the API returns
+`410 Gone`. The detail page surfaces this as a friendly "underlying mapping
+was removed" state rather than a generic error, and Accept and Dismiss are
+disabled because there is nothing to act on.
+
+**Auth.** The web UI sends `X-API-Key` from the build-time env var
+`VITE_HOTWASH_API_KEY` on every request to a key-gated endpoint (the entire
+`/api/ingest/*` surface, including suggestions and mappings). Because Vite
+inlines `import.meta.env` at build time, the key must be set when the
+frontend bundle is built; a missing or wrong value at build time produces a
+bundle that cannot authenticate at runtime, no matter what the deployment
+config says. This is the smallest-blast-radius pick that lets the queue work
+today, on the assumption that the bundle is served from the same trust
+boundary as the API. A broader auth design (per-user sessions, browser-side
+login, or a runtime-injected token) is a follow-up.
+
 ## Known limitations
 
 The cooldown check is read-modify-write and not atomic across workers: two
