@@ -350,7 +350,13 @@ class SuggestionDetail(BaseModel):
 
 
 class SuggestionDismiss(BaseModel):
-    """Optional reason for dismissal, recorded on the IngestSuppressionLog row."""
+    """Optional dismissal reason. Not persisted to the database.
+
+    The IngestSuppressionLog row written on dismiss uses a fixed-vocabulary
+    reason column (always "suggestion_dismissed"). This free-form text is
+    accepted purely so a future audit-log surface can record analyst intent;
+    today only the fact that a reason was provided is logged at INFO level.
+    """
 
     model_config = ConfigDict(extra="forbid")
 

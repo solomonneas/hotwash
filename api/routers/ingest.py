@@ -289,6 +289,27 @@ def delete_mapping(mapping_id: int, db: Session = Depends(get_db)):
 # --- Suggestions ---
 
 
+# Map service-layer SuggestionStateError codes to (status, public message).
+# Internal exception messages are kept off the wire so we don't leak
+# implementation detail (PR #9 finding #5 stripped this from the webhook
+# path; the suggestion endpoints inherit the same hygiene).
+_SUGGESTION_ERROR_RESPONSES: dict[str, tuple[int, str]] = {
+    "already_accepted": (409, "Suggestion has already been accepted"),
+    "already_dismissed": (409, "Suggestion has already been dismissed"),
+    "concurrent": (409, "Suggestion state changed concurrently, please retry"),
+    "inconsistent": (409, "Suggestion is in an inconsistent state and cannot be processed"),
+}
+
+
+def _http_for_state_error(exc: SuggestionStateError) -> HTTPException:
+    status_code, public = _SUGGESTION_ERROR_RESPONSES.get(
+        exc.code, (409, "Suggestion is in an inconsistent state and cannot be processed")
+    )
+    # Operator-facing detail goes to the log; clients see only the public message.
+    logger.warning("Suggestion state error (%s): %s", exc.code, exc)
+    return HTTPException(status_code=status_code, detail=public)
+
+
 def _serialize_suggestion_row(suggestion: IngestSuggestion) -> SuggestionOut:
     return SuggestionOut(
         id=suggestion.id,
@@ -307,6 +328,12 @@ def _serialize_suggestion_row(suggestion: IngestSuggestion) -> SuggestionOut:
 
 
 def _serialize_suggestion_detail(suggestion: IngestSuggestion) -> SuggestionDetail:
+    """Build a SuggestionDetail. Caller MUST check ``suggestion.mapping`` first.
+
+    This is a pure serializer: it does not raise HTTPException. Validation of
+    referenced rows happens in the route handler so the helper can be reused
+    in non-HTTP contexts.
+    """
     if suggestion.alert_payload_json:
         try:
             alert_payload = json.loads(suggestion.alert_payload_json)
@@ -320,13 +347,6 @@ def _serialize_suggestion_detail(suggestion: IngestSuggestion) -> SuggestionDeta
             alert_payload = {}
     else:
         alert_payload = {}
-
-    mapping = suggestion.mapping
-    if mapping is None:
-        raise HTTPException(
-            status_code=409,
-            detail=f"Suggestion {suggestion.id} references a deleted mapping",
-        )
 
     playbook_title = suggestion.playbook.title if suggestion.playbook else None
 
@@ -344,7 +364,7 @@ def _serialize_suggestion_detail(suggestion: IngestSuggestion) -> SuggestionDeta
         created_at=suggestion.created_at,
         resolved_at=suggestion.resolved_at,
         alert_payload=alert_payload,
-        mapping=_serialize_mapping(mapping),
+        mapping=_serialize_mapping(suggestion.mapping),
         playbook_title=playbook_title,
     )
 
@@ -398,6 +418,15 @@ def get_suggestion(suggestion_id: int, db: Session = Depends(get_db)):
     suggestion = load_suggestion(db, suggestion_id)
     if suggestion is None:
         raise HTTPException(status_code=404, detail="Suggestion not found")
+    if suggestion.mapping is None:
+        # The mapping FK has no ON DELETE behaviour and SQLite default skips
+        # foreign-key enforcement, so this is reachable if a mapping is hard
+        # deleted while a suggestion still references it. 410 Gone signals
+        # the resource existed but is no longer retrievable.
+        raise HTTPException(
+            status_code=410,
+            detail="Suggestion's underlying mapping has been removed",
+        )
     return _serialize_suggestion_detail(suggestion)
 
 
@@ -411,7 +440,7 @@ def accept_suggestion_route(suggestion_id: int, db: Session = Depends(get_db)):
     except LookupError:
         raise HTTPException(status_code=404, detail="Suggestion not found")
     except SuggestionStateError as exc:
-        raise HTTPException(status_code=409, detail=str(exc))
+        raise _http_for_state_error(exc)
     return SuggestionAcceptResponse(
         execution=_execution_summary(execution),
         already_accepted=already_accepted,
@@ -433,5 +462,5 @@ def dismiss_suggestion_route(
     except LookupError:
         raise HTTPException(status_code=404, detail="Suggestion not found")
     except SuggestionStateError as exc:
-        raise HTTPException(status_code=409, detail=str(exc))
+        raise _http_for_state_error(exc)
     return _serialize_suggestion_row(suggestion)

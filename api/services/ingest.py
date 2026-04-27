@@ -51,7 +51,17 @@ COOLDOWN_ANCHOR_REASONS = (
 
 
 class SuggestionStateError(Exception):
-    """Raised when a suggestion is in a state that prevents the requested operation."""
+    """Raised when a suggestion is in a state that prevents the requested operation.
+
+    The ``code`` attribute classifies the failure for the router boundary so
+    we can return a generic, user-safe message without leaking internal state
+    machine wording. ``message`` is detailed and intended for operator logs.
+    """
+
+    def __init__(self, code: str, message: str) -> None:
+        super().__init__(message)
+        self.code = code
+
 
 _HEX64_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 
@@ -433,17 +443,28 @@ def load_suggestion(db: Session, suggestion_id: int) -> Optional[IngestSuggestio
 
 def _decode_alert_payload(suggestion: IngestSuggestion) -> tuple[WazuhAlertIngest, Dict[str, Any]]:
     if not suggestion.alert_payload_json:
-        raise SuggestionStateError("Suggestion has no stored alert payload")
+        raise SuggestionStateError(
+            "inconsistent", f"Suggestion {suggestion.id} has no stored alert payload"
+        )
     try:
         raw_alert = json.loads(suggestion.alert_payload_json)
     except json.JSONDecodeError as exc:
-        raise SuggestionStateError("Stored alert payload is not valid JSON") from exc
+        raise SuggestionStateError(
+            "inconsistent",
+            f"Suggestion {suggestion.id} alert_payload_json is not valid JSON",
+        ) from exc
     if not isinstance(raw_alert, dict):
-        raise SuggestionStateError("Stored alert payload is not a JSON object")
+        raise SuggestionStateError(
+            "inconsistent",
+            f"Suggestion {suggestion.id} alert_payload is not a JSON object",
+        )
     try:
         alert = WazuhAlertIngest.model_validate(raw_alert)
     except ValidationError as exc:
-        raise SuggestionStateError("Stored alert payload no longer matches schema") from exc
+        raise SuggestionStateError(
+            "inconsistent",
+            f"Suggestion {suggestion.id} alert_payload no longer matches schema",
+        ) from exc
     return alert, raw_alert
 
 
@@ -467,7 +488,8 @@ def accept_suggestion(db: Session, suggestion_id: int) -> tuple[Execution, bool]
     if suggestion.state == "accepted":
         if not suggestion.accepted_execution_id:
             raise SuggestionStateError(
-                f"Suggestion {suggestion_id} is accepted but has no execution_id"
+                "inconsistent",
+                f"Suggestion {suggestion_id} is accepted but has no execution_id",
             )
         existing = (
             db.query(Execution)
@@ -476,41 +498,55 @@ def accept_suggestion(db: Session, suggestion_id: int) -> tuple[Execution, bool]
         )
         if existing is None:
             raise SuggestionStateError(
-                f"Suggestion {suggestion_id} references a deleted execution"
+                "inconsistent",
+                f"Suggestion {suggestion_id} references a deleted execution",
             )
         return existing, True
 
     if suggestion.state == "dismissed":
-        raise SuggestionStateError(f"Suggestion {suggestion_id} was already dismissed")
+        raise SuggestionStateError(
+            "already_dismissed", f"Suggestion {suggestion_id} was already dismissed"
+        )
 
     if suggestion.state != "pending":
         raise SuggestionStateError(
-            f"Suggestion {suggestion_id} is in unexpected state {suggestion.state!r}"
+            "inconsistent",
+            f"Suggestion {suggestion_id} is in unexpected state {suggestion.state!r}",
         )
 
     mapping = suggestion.mapping
     if mapping is None:
         raise SuggestionStateError(
-            f"Suggestion {suggestion_id} references a deleted mapping"
+            "inconsistent",
+            f"Suggestion {suggestion_id} references a deleted mapping",
         )
 
     alert, raw_alert = _decode_alert_payload(suggestion)
 
-    execution = _create_execution(
-        db,
-        mapping,
-        alert,
-        raw_alert,
-        suggestion.fingerprint,
-        started_by="hotwash-suggestion",
-        event_type="accepted_from_suggestion",
-        event_actor="hotwash-suggestion",
-        event_description=(
-            f"Accepted ingest suggestion #{suggestion.id} "
-            f"(rule {alert.rule.id if alert.rule else '?'}, "
-            f"agent {alert.agent.name if alert.agent else '?'})"
-        ),
-    )
+    try:
+        execution = _create_execution(
+            db,
+            mapping,
+            alert,
+            raw_alert,
+            suggestion.fingerprint,
+            started_by="hotwash-suggestion",
+            event_type="accepted_from_suggestion",
+            event_actor="hotwash-suggestion",
+            event_description=(
+                f"Accepted ingest suggestion #{suggestion.id} "
+                f"(rule {alert.rule.id if alert.rule else '?'}, "
+                f"agent {alert.agent.name if alert.agent else '?'})"
+            ),
+        )
+    except LookupError as exc:
+        # _create_execution raises LookupError if the mapping points at a
+        # playbook that has been soft-deleted. Map to a coded state error so
+        # the router returns 409 instead of the catch-all 404 path.
+        raise SuggestionStateError(
+            "inconsistent",
+            f"Suggestion {suggestion_id} cannot be accepted: {exc}",
+        ) from exc
 
     # Atomically transition pending -> accepted. If another caller raced us
     # (single-process uvicorn keeps this rare; multi-worker is a documented
@@ -532,7 +568,8 @@ def accept_suggestion(db: Session, suggestion_id: int) -> tuple[Execution, bool]
     if result.rowcount == 0:
         db.rollback()
         raise SuggestionStateError(
-            f"Suggestion {suggestion_id} state changed during accept; retry"
+            "concurrent",
+            f"Suggestion {suggestion_id} state changed during accept; retry",
         )
 
     db.commit()
@@ -549,10 +586,12 @@ def dismiss_suggestion(
 
     Writes an ``IngestSuppressionLog`` row with reason ``suggestion_dismissed``
     so subsequent alerts with the same (mapping_id, rule_id, agent_id)
-    fingerprint hit the cooldown window. The optional human-supplied reason is
-    not stored on the log row (which has a fixed-vocabulary reason column);
-    instead we treat it as a request for an audit description in the future.
-    Today it is logged at INFO.
+    fingerprint hit the cooldown window. The optional human-supplied reason
+    is intentionally not persisted: ``IngestSuppressionLog.reason`` uses a
+    fixed vocabulary, and the free-form text could contain incident-sensitive
+    detail (IOCs, hostnames, alert wording) that does not belong in
+    application logs either. We record only that a reason was provided, not
+    its contents.
 
     Raises ``LookupError`` if the suggestion does not exist.
     Raises ``SuggestionStateError`` if the suggestion has already been
@@ -564,13 +603,17 @@ def dismiss_suggestion(
 
     if suggestion.state == "accepted":
         raise SuggestionStateError(
-            f"Suggestion {suggestion_id} was already accepted; cannot dismiss"
+            "already_accepted",
+            f"Suggestion {suggestion_id} was already accepted; cannot dismiss",
         )
     if suggestion.state == "dismissed":
-        raise SuggestionStateError(f"Suggestion {suggestion_id} was already dismissed")
+        raise SuggestionStateError(
+            "already_dismissed", f"Suggestion {suggestion_id} was already dismissed"
+        )
     if suggestion.state != "pending":
         raise SuggestionStateError(
-            f"Suggestion {suggestion_id} is in unexpected state {suggestion.state!r}"
+            "inconsistent",
+            f"Suggestion {suggestion_id} is in unexpected state {suggestion.state!r}",
         )
 
     now = datetime.now(timezone.utc)
@@ -585,7 +628,8 @@ def dismiss_suggestion(
     if result.rowcount == 0:
         db.rollback()
         raise SuggestionStateError(
-            f"Suggestion {suggestion_id} state changed during dismiss; retry"
+            "concurrent",
+            f"Suggestion {suggestion_id} state changed during dismiss; retry",
         )
 
     _log(
@@ -596,11 +640,13 @@ def dismiss_suggestion(
         suggestion.agent_id,
         "suggestion_dismissed",
     )
-    if reason:
+    if reason is not None:
+        # Record only that a reason was provided; the contents may contain
+        # incident-sensitive analyst input.
         logger.info(
-            "Suggestion %s dismissed with reason: %s",
+            "Suggestion %s dismissed with operator-supplied reason (%d chars)",
             suggestion_id,
-            reason,
+            len(reason),
         )
 
     db.commit()
