@@ -1,6 +1,8 @@
 # hotwash-mcp
 
-Model Context Protocol server for [Hotwash](https://github.com/solomonneas/hotwash). Lets any MCP-capable LLM list playbooks, start runs against incidents, advance steps, attach evidence, and query the timeline.
+Model Context Protocol server for [Hotwash](https://github.com/solomonneas/hotwash). Lets any MCP-capable LLM list playbooks, start runs against incidents, advance steps, attach evidence, query the timeline, and review the Wazuh ingest suggestion queue.
+
+Version 0.2.0 adds suggestion queue tools.
 
 ## What it exposes
 
@@ -13,6 +15,8 @@ Model Context Protocol server for [Hotwash](https://github.com/solomonneas/hotwa
 | `hotwash_advance_step` | Update one step: status, assignee, append a note, or record a decision |
 | `hotwash_attach_artifact` | Upload text or base64 artifact to a step |
 | `hotwash_cancel_run` | Mark a run abandoned (requires `confirm: true`) |
+| `hotwash_list_suggestions` | List Wazuh ingest suggestions, filter by state or mapping_id (read-only) |
+| `hotwash_accept_suggestion` | Accept a pending suggestion, creating an Execution (requires `confirm: true`) |
 
 ## Install
 

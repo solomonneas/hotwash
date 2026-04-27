@@ -308,6 +308,73 @@ class IngestResponse(BaseModel):
     suggestion_id: Optional[int] = None
 
 
+class SuggestionOut(BaseModel):
+    """List-row shape for an ingest suggestion. Excludes the full alert payload."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    mapping_id: int
+    playbook_id: int
+    state: str
+    fingerprint: str
+    rule_id: Optional[str] = None
+    agent_id: Optional[str] = None
+    agent_name: Optional[str] = None
+    description: Optional[str] = None
+    accepted_execution_id: Optional[int] = None
+    created_at: datetime
+    resolved_at: Optional[datetime] = None
+
+
+class SuggestionDetail(BaseModel):
+    """Detail view: includes the parsed alert payload, mapping, and resolved playbook title."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    mapping_id: int
+    playbook_id: int
+    state: str
+    fingerprint: str
+    rule_id: Optional[str] = None
+    agent_id: Optional[str] = None
+    agent_name: Optional[str] = None
+    description: Optional[str] = None
+    accepted_execution_id: Optional[int] = None
+    created_at: datetime
+    resolved_at: Optional[datetime] = None
+    alert_payload: Dict[str, Any] = Field(default_factory=dict)
+    mapping: MappingOut
+    playbook_title: Optional[str] = None
+
+
+class SuggestionDismiss(BaseModel):
+    """Optional dismissal reason. Not persisted to the database.
+
+    The IngestSuppressionLog row written on dismiss uses a fixed-vocabulary
+    reason column (always "suggestion_dismissed"). This free-form text is
+    accepted purely so a future audit-log surface can record analyst intent;
+    today only the fact that a reason was provided is logged at INFO level.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    reason: Optional[str] = Field(default=None, max_length=500)
+
+
+class SuggestionAcceptResponse(BaseModel):
+    """Returned by POST /ingest/suggestions/{id}/accept.
+
+    Wraps the resulting Execution summary along with an idempotency flag so
+    callers can tell whether this call created the execution or returned an
+    existing one.
+    """
+
+    execution: ExecutionSummary
+    already_accepted: bool = False
+
+
 # --- Integration schemas ---
 
 class IntegrationOut(BaseModel):

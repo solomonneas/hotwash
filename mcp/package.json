@@ -1,7 +1,7 @@
 {
   "name": "hotwash-mcp",
-  "version": "0.1.0",
-  "description": "MCP server for Hotwash - drive incident response playbooks (start runs, advance steps, attach evidence) from any MCP-capable LLM",
+  "version": "0.2.0",
+  "description": "MCP server for Hotwash - drive incident response playbooks (start runs, advance steps, attach evidence) and review the Wazuh ingest suggestion queue from any MCP-capable LLM",
   "type": "module",
   "main": "dist/index.js",
   "bin": {

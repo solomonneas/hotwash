@@ -81,6 +81,41 @@ first or no mapping will match.
   `context.wazuh_alert`. Returns `201` with `execution_id`.
 - `suggest`: queues an `IngestSuggestion` for human review. Returns `200`
   with `suggestion_id`.
+
+  **Listing pending suggestions:**
+
+  ```bash
+  # All pending (default)
+  curl -H "X-API-Key: $HOTWASH_API_KEY" \
+    https://hotwash.example/api/ingest/suggestions
+
+  # Filter by state and mapping
+  curl -H "X-API-Key: $HOTWASH_API_KEY" \
+    "https://hotwash.example/api/ingest/suggestions?state=pending&mapping_id=3"
+
+  # Full detail for one suggestion (includes parsed alert_payload, mapping ref, playbook_title)
+  curl -H "X-API-Key: $HOTWASH_API_KEY" \
+    https://hotwash.example/api/ingest/suggestions/42
+  ```
+
+  **Accepting a suggestion** (creates an Execution, idempotent):
+
+  ```bash
+  curl -X POST -H "X-API-Key: $HOTWASH_API_KEY" \
+    https://hotwash.example/api/ingest/suggestions/42/accept
+  # Returns: {"execution_id": 17, "already_accepted": false}
+  # Re-accept returns the same execution_id with "already_accepted": true
+  ```
+
+  **Dismissing a suggestion** (anchors cooldown, optional reason):
+
+  ```bash
+  curl -X POST -H "X-API-Key: $HOTWASH_API_KEY" \
+    -H "Content-Type: application/json" \
+    -d '{"reason": "noise - known scanner activity"}' \
+    https://hotwash.example/api/ingest/suggestions/42/dismiss
+  ```
+
 - `off`: logs the receipt only. Returns `200` with `status: ignored`.
 
 ## HMAC scheme
@@ -102,9 +137,89 @@ return `401` with the same opaque message.
 
 Fingerprint is `sha256(mapping_id:rule_id:agent_id)`. Default window is
 `300s`, set per mapping via `cooldown_seconds`, rotatable via PATCH. The
-suppression log doubles as the cooldown anchor: only `dispatched_auto`,
-`dispatched_suggest`, and `cooldown` rows count. `no_match` and `mode_off`
-do not, so flipping a mapping on does not silently swallow the next alert.
+suppression log doubles as the cooldown anchor: `dispatched_auto`,
+`dispatched_suggest`, `cooldown`, and `suggestion_dismissed` rows count.
+`no_match` and `mode_off` do not, so flipping a mapping on does not silently
+swallow the next alert.
+
+Dismissing a suggestion writes a `suggestion_dismissed` row to the suppression
+log, anchoring the cooldown window for that fingerprint. This prevents the same
+alert fingerprint from immediately re-queueing after a dismiss - useful for
+confirmed noise where you want the cooldown clock to start from the review
+decision rather than the original ingest time.
+
+## Suggestion lifecycle
+
+Suggestions move through three states:
+
+- `pending` - created on ingest, awaiting a review decision.
+- `accepted` - a human (or an authorized agent) called POST /accept. An
+  Execution was created with the original alert in `context.wazuh_alert`,
+  identical to what `mode=auto` would have produced. The suggestion's
+  `accepted_execution_id` field links it to that run.
+- `dismissed` - a human called POST /dismiss. No Execution is created.
+  The cooldown is anchored via the suppression log so the fingerprint
+  does not immediately re-queue.
+
+**State transitions:**
+
+```
+pending --[POST /accept]--> accepted   (creates Execution)
+pending --[POST /dismiss]--> dismissed (anchors cooldown)
+```
+
+Neither transition is reversible. There is no path from `accepted` or
+`dismissed` back to `pending`.
+
+**Idempotency:** POST /accept is safe to call more than once. If the
+suggestion is already accepted, the response returns the existing
+`execution_id` plus `"already_accepted": true` with a `200` status. No
+duplicate Execution is created.
+
+**Error responses (409):** The accept endpoint returns `409 Conflict` in
+four situations:
+
+| Scenario | Message |
+|----------|---------|
+| Already accepted | `suggestion already accepted` |
+| Already dismissed | `suggestion already dismissed` |
+| Concurrent modification during accept | `concurrent modification - retry` |
+| Underlying playbook deleted after suggestion was queued | `inconsistent state - playbook unavailable` |
+
+Dismiss does not produce 409; calling dismiss on an already-dismissed
+suggestion is a no-op returning `200`.
+
+## Reviewing via MCP
+
+Two MCP tools are available for suggestion review when using hotwash-mcp
+0.2.0 or later.
+
+**`hotwash_list_suggestions`** - read-only. Mirrors the GET
+`/api/ingest/suggestions` filters:
+
+- `state` - `pending`, `accepted`, or `dismissed` (default: `pending`)
+- `mapping_id` - restrict to one mapping
+- `limit` - cap result count
+
+Use case: an LLM agent scanning the pending queue to triage alerts before a
+human review session. Because this tool is read-only it carries no confirm
+gate.
+
+**`hotwash_accept_suggestion`** - write. Requires `confirm: true` in the
+call. Returns the resulting `execution_id` so the caller can immediately
+chain to `hotwash_query_run` to inspect the started playbook run. Example
+prompt to pass to a model with MCP support:
+
+> Review the pending suggestion queue and accept the highest-priority CVE
+> alert. Then query the resulting run and summarize which playbook step is
+> first.
+
+**Why dismiss is not exposed via MCP:** Dismissal permanently suppresses an
+alert fingerprint for the cooldown window and anchors the suppression log.
+A model acting on a queue could swallow legitimate noise without the context
+a human reviewer brings. Accept is exposed because its worst outcome is a
+playbook run that a human can cancel; dismiss has no safe undo within the
+cooldown window. Dismiss remains a human-only action via the REST API.
 
 ## Known limitations
 

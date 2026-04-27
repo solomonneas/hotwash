@@ -279,11 +279,13 @@ class IngestSuggestion(Base):
 
 
 class IngestSuppressionLog(Base):
-    """Append-only log of every ingest decision: dispatch, suggest, or suppress.
+    """Append-only log of every ingest decision: dispatch, suggest, suppress, or dismiss.
 
     Doubles as the cooldown anchor: cooldown lookups query MAX(created_at)
     WHERE fingerprint=? to find the last time this fingerprint was seen
-    regardless of outcome.
+    regardless of outcome. The fixed-vocabulary ``reason`` column drives
+    which rows count as anchors via ``COOLDOWN_ANCHOR_REASONS`` in
+    ``api.services.ingest``.
     """
 
     __tablename__ = "ingest_suppression_log"

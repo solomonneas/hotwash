@@ -5,6 +5,10 @@ import type {
   ExecutionSummary,
   PlaybookDetail,
   PlaybookSummary,
+  SuggestionAcceptResponse,
+  SuggestionDetail,
+  SuggestionState,
+  SuggestionSummary,
   TimelineEvent,
 } from "./types.js";
 
@@ -122,5 +126,25 @@ export class HotwashClient {
 
   getTimeline(executionId: number): Promise<TimelineEvent[]> {
     return this.request<TimelineEvent[]>(`/api/executions/${executionId}/timeline`);
+  }
+
+  listSuggestions(filters: { state?: SuggestionState; mapping_id?: number; limit?: number } = {}): Promise<SuggestionSummary[]> {
+    const params = new URLSearchParams();
+    if (filters.state) params.set("state", filters.state);
+    if (filters.mapping_id !== undefined) params.set("mapping_id", String(filters.mapping_id));
+    if (filters.limit !== undefined) params.set("limit", String(filters.limit));
+    const qs = params.toString();
+    return this.request<SuggestionSummary[]>(`/api/ingest/suggestions${qs ? `?${qs}` : ""}`);
+  }
+
+  getSuggestion(suggestionId: number): Promise<SuggestionDetail> {
+    return this.request<SuggestionDetail>(`/api/ingest/suggestions/${suggestionId}`);
+  }
+
+  acceptSuggestion(suggestionId: number): Promise<SuggestionAcceptResponse> {
+    return this.request<SuggestionAcceptResponse>(
+      `/api/ingest/suggestions/${suggestionId}/accept`,
+      { method: "POST" },
+    );
   }
 }
