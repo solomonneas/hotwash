@@ -204,6 +204,14 @@ All actions are templates that teams can customize.
 
 ---
 
+## Roadmap
+
+Where Hotwash is going next: a Model Context Protocol server (`hotwash-mcp`) that exposes the playbook engine to AI agents, and a Wazuh alert ingestion path that turns inbound alerts into runs.
+
+See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan.
+
+---
+
 ## License
 
 MIT - see [LICENSE](LICENSE) for details.
