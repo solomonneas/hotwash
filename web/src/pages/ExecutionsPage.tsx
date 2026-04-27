@@ -4,7 +4,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { useHashRouter } from '../router';
-import { API_BASE_URL } from '../api/client';
+import { API_BASE_URL, API_KEY } from '../api/client';
 import { relativeTime } from '../lib/time';
 
 interface Execution {
@@ -65,7 +65,11 @@ const ExecutionsPage: React.FC = () => {
   const fetchExecutions = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/executions`);
+      const res = await fetch(`${API_BASE_URL}/api/executions`, {
+        headers: {
+          ...(API_KEY ? { 'X-API-Key': API_KEY } : {}),
+        },
+      });
       if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
       setExecutions(Array.isArray(data) ? data : data.executions || []);
@@ -79,7 +83,11 @@ const ExecutionsPage: React.FC = () => {
 
   const fetchPlaybooks = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/playbooks`);
+      const res = await fetch(`${API_BASE_URL}/api/playbooks`, {
+        headers: {
+          ...(API_KEY ? { 'X-API-Key': API_KEY } : {}),
+        },
+      });
       if (!res.ok) return;
       const data = await res.json();
       const list = Array.isArray(data) ? data : data.playbooks || [];
@@ -97,7 +105,10 @@ const ExecutionsPage: React.FC = () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/executions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(API_KEY ? { 'X-API-Key': API_KEY } : {}),
+        },
         body: JSON.stringify({
           playbook_id: newPlaybookId,
           incident_title: newIncidentTitle.trim(),

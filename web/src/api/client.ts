@@ -98,7 +98,7 @@ async function parseJsonSafe(response: Response): Promise<any | null> {
   }
 }
 
-const API_KEY: string | undefined = import.meta.env.VITE_HOTWASH_API_KEY;
+export const API_KEY: string | undefined = import.meta.env.VITE_HOTWASH_API_KEY;
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${path}`;
