@@ -133,6 +133,80 @@ class PlaybookResponse(PlaybookDetail):
     pass
 
 
+# --- Execution schemas ---
+
+class ExecutionEvidence(BaseModel):
+    filename: str
+    size: int
+    uploaded_at: datetime
+
+
+class ExecutionStep(BaseModel):
+    node_id: str
+    node_type: str
+    node_label: str
+    phase: Optional[str] = None
+    status: str = "not_started"
+    assignee: Optional[str] = None
+    notes: List[str] = Field(default_factory=list)
+    evidence: List[ExecutionEvidence] = Field(default_factory=list)
+    decision_taken: Optional[str] = None
+    decision_options: Optional[List[str]] = None
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+
+
+class ExecutionCreate(BaseModel):
+    playbook_id: int
+    incident_title: str = Field(..., min_length=1)
+    incident_id: Optional[str] = None
+    started_by: Optional[str] = None
+    context: Optional[Dict[str, Any]] = None
+
+
+class ExecutionUpdate(BaseModel):
+    status: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class ExecutionStepUpdate(BaseModel):
+    status: Optional[str] = None
+    assignee: Optional[str] = None
+    notes: Optional[str] = None
+    decision_taken: Optional[str] = None
+
+
+class ExecutionSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    playbook_id: int
+    playbook_title: Optional[str] = None
+    incident_title: str
+    incident_id: Optional[str] = None
+    status: str
+    started_by: Optional[str] = None
+    started_at: datetime
+    completed_at: Optional[datetime] = None
+    steps_total: int = 0
+    steps_completed: int = 0
+
+
+class ExecutionDetail(BaseModel):
+    execution: ExecutionSummary
+    steps: List[ExecutionStep]
+    playbook_title: Optional[str] = None
+
+
+class TimelineEventOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    timestamp: datetime
+    event_type: str
+    actor: Optional[str] = None
+    description: str
+
+
 # --- Integration schemas ---
 
 class IntegrationOut(BaseModel):

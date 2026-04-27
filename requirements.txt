@@ -1,4 +1,4 @@
-# Playbook Forge API Dependencies
+# Hotwash API Dependencies
 
 # FastAPI framework
 fastapi==0.109.0

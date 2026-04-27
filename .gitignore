@@ -97,3 +97,6 @@ IMPLEMENTATION_*.md
 MERMAID_PARSER_IMPLEMENTATION.md
 docs/PRD-*.md
 docs/DEVELOPMENT-PLAN.md
+
+# Runtime evidence uploads
+api/data/evidence/

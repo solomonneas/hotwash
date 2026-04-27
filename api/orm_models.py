@@ -1,7 +1,7 @@
 """
 SQLAlchemy ORM models for Hotwash.
 
-Tables: Playbook, Tag, PlaybookTag, PlaybookVersion
+Tables: Playbook, Tag, PlaybookTag, PlaybookVersion, Execution, ExecutionEvent
 """
 
 from datetime import datetime, timezone
@@ -135,6 +135,68 @@ class PlaybookVersion(Base):
 
     def __repr__(self) -> str:
         return f"<PlaybookVersion(playbook_id={self.playbook_id}, v={self.version_number})>"
+
+
+class Execution(Base):
+    __tablename__ = "executions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    playbook_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("playbooks.id"),
+        nullable=False,
+    )
+    incident_title: Mapped[str] = mapped_column(String(255), nullable=False)
+    incident_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    status: Mapped[str] = mapped_column(String(32), default="active", server_default="active", nullable=False)
+    started_by: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    started_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False
+    )
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    context_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    steps_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    playbook: Mapped["Playbook"] = relationship("Playbook")
+    events: Mapped[List["ExecutionEvent"]] = relationship(
+        "ExecutionEvent",
+        back_populates="execution",
+        cascade="all, delete-orphan",
+        order_by="ExecutionEvent.timestamp.desc()",
+    )
+
+    __table_args__ = (
+        Index("ix_executions_status", "status"),
+        Index("ix_executions_playbook_id", "playbook_id"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<Execution(id={self.id}, status={self.status!r})>"
+
+
+class ExecutionEvent(Base):
+    __tablename__ = "execution_events"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    execution_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("executions.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    timestamp: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False
+    )
+    event_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    actor: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+
+    execution: Mapped["Execution"] = relationship("Execution", back_populates="events")
+
+    __table_args__ = (
+        Index("ix_execution_events_execution_id", "execution_id"),
+        Index("ix_execution_events_event_type", "event_type"),
+    )
 
 
 # Import Integration so it shares the same Base.metadata
