@@ -23,6 +23,8 @@ import IntegrationsPage from './pages/IntegrationsPage';
 import ExecutionsPage from './pages/ExecutionsPage';
 import ExecutionViewPage from './pages/ExecutionViewPage';
 import ReportPage from './pages/ReportPage';
+import SuggestionsPage from './pages/SuggestionsPage';
+import SuggestionDetailPage from './pages/SuggestionDetailPage';
 import AIGeneratePage from './pages/AIGeneratePage';
 import V1App from './variants/v1';
 import V2App from './variants/v2';
@@ -170,6 +172,26 @@ function App() {
         <div className="App">
           {sharedUI}
           <ReportPage executionId={route.params.id} />
+          <GitHubFooter />
+        </div>
+      );
+    }
+
+    if (route.page === 'suggestions') {
+      return (
+        <div className="App">
+          {sharedUI}
+          <SuggestionsPage />
+          <GitHubFooter />
+        </div>
+      );
+    }
+
+    if (route.page === 'suggestion-view') {
+      return (
+        <div className="App">
+          {sharedUI}
+          <SuggestionDetailPage suggestionId={route.params.id} />
           <GitHubFooter />
         </div>
       );

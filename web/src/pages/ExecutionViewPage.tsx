@@ -5,8 +5,9 @@
 
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useHashRouter } from '../router';
-import { API_BASE_URL } from '../api/client';
+import { API_BASE_URL, API_KEY } from '../api/client';
 import { useExecutionSocket } from '../hooks/useExecutionSocket';
+import { relativeTime } from '../lib/time';
 
 interface Step {
   node_id: string;
@@ -71,14 +72,6 @@ const EVENT_COLORS: Record<string, string> = {
   execution_completed: '#3b82f6',
 };
 
-function relativeTime(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  if (diff < 60000) return 'just now';
-  if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
-  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
-  return `${Math.floor(diff / 86400000)}d ago`;
-}
-
 function formatDuration(ms: number): string {
   if (ms < 60000) return `${Math.round(ms / 1000)}s`;
   if (ms < 3600000) return `${Math.floor(ms / 60000)}m ${Math.round((ms % 60000) / 1000)}s`;
@@ -112,7 +105,11 @@ const ExecutionViewPage: React.FC<ExecutionViewPageProps> = ({ executionId }) =>
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/executions/${executionId}`);
+      const res = await fetch(`${API_BASE_URL}/api/executions/${executionId}`, {
+        headers: {
+          ...(API_KEY ? { 'X-API-Key': API_KEY } : {}),
+        },
+      });
       if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
       setExecution(data.execution);
@@ -167,7 +164,10 @@ const ExecutionViewPage: React.FC<ExecutionViewPageProps> = ({ executionId }) =>
     try {
       await fetch(`${API_BASE_URL}/api/executions/${executionId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(API_KEY ? { 'X-API-Key': API_KEY } : {}),
+        },
         body: JSON.stringify(body),
       });
       fetchData();
@@ -178,7 +178,10 @@ const ExecutionViewPage: React.FC<ExecutionViewPageProps> = ({ executionId }) =>
     try {
       await fetch(`${API_BASE_URL}/api/executions/${executionId}/steps/${nodeId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(API_KEY ? { 'X-API-Key': API_KEY } : {}),
+        },
         body: JSON.stringify(body),
       });
       fetchData();
@@ -199,6 +202,9 @@ const ExecutionViewPage: React.FC<ExecutionViewPageProps> = ({ executionId }) =>
       formData.append('file', file);
       await fetch(`${API_BASE_URL}/api/executions/${executionId}/steps/${selectedStepId}/evidence`, {
         method: 'POST',
+        headers: {
+          ...(API_KEY ? { 'X-API-Key': API_KEY } : {}),
+        },
         body: formData,
       });
       fetchData();
@@ -209,7 +215,11 @@ const ExecutionViewPage: React.FC<ExecutionViewPageProps> = ({ executionId }) =>
   const fetchTimeline = async () => {
     setTimelineLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/executions/${executionId}/timeline`);
+      const res = await fetch(`${API_BASE_URL}/api/executions/${executionId}/timeline`, {
+        headers: {
+          ...(API_KEY ? { 'X-API-Key': API_KEY } : {}),
+        },
+      });
       if (res.ok) {
         const data = await res.json();
         setTimeline(Array.isArray(data) ? data : data.events || []);

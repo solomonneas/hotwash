@@ -127,6 +127,12 @@ const LibraryPage: React.FC = () => {
               </button>
               <button
                 className="px-4 py-2 rounded-md bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700"
+                onClick={() => navigate('#/suggestions')}
+              >
+                Suggestions
+              </button>
+              <button
+                className="px-4 py-2 rounded-md bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700"
                 onClick={() => navigate('#/integrations')}
               >
                 Integrations
