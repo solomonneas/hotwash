@@ -61,7 +61,7 @@ const SharedPage: React.FC<SharedPageProps> = ({ token }) => {
         <div className="max-w-md w-full rounded-xl border border-slate-700 bg-slate-900/80 p-8 text-center">
           <h1 className="text-2xl font-semibold">Playbook not found</h1>
           <p className="text-sm text-slate-400 mt-2">This share link is invalid or has been revoked.</p>
-          <a href="#/" className="inline-block mt-5 text-blue-400 hover:text-blue-300 text-sm">Return to Playbook Forge</a>
+          <a href="#/" className="inline-block mt-5 text-blue-400 hover:text-blue-300 text-sm">Return to Hotwash</a>
         </div>
       </div>
     );
@@ -110,7 +110,7 @@ const SharedPage: React.FC<SharedPageProps> = ({ token }) => {
         </div>
 
         <footer className="mt-8 text-xs text-slate-500">
-          Built with <a href="#/" className="text-blue-400 hover:text-blue-300">Playbook Forge</a>
+          Built with <a href="#/" className="text-blue-400 hover:text-blue-300">Hotwash</a>
         </footer>
       </div>
     </div>

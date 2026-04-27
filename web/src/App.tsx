@@ -1,5 +1,5 @@
 /**
- * Playbook Forge - Main Application Component
+ * Hotwash - Main Application Component
  *
  * Root component with hash-based routing.
  * Routes:
@@ -50,7 +50,7 @@ const variantComponents: Record<number, React.FC<{ route: any; onNavigate: (path
 function GitHubFooter() {
   return (
     <a
-      href="https://github.com/solomonneas/playbook-forge"
+      href="https://github.com/solomonneas/hotwash"
       target="_blank"
       rel="noopener noreferrer"
       style={{

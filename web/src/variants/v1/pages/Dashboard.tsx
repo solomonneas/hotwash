@@ -57,7 +57,7 @@ const Dashboard: React.FC = () => {
         <h2>1.1 — Situation Overview</h2>
         <p>
           This dashboard provides a consolidated view of all operational playbooks
-          currently loaded in the Playbook Forge system. Each playbook has been
+          currently loaded in the Hotwash system. Each playbook has been
           parsed into a structured node-edge graph suitable for visual reference
           and procedural execution.
         </p>

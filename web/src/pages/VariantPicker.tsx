@@ -55,7 +55,7 @@ const VariantPicker: React.FC<VariantPickerProps> = ({ onSelect }) => {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h1 style={styles.title}>⚒️ Solomon's Playbook Forge</h1>
+        <h1 style={styles.title}>⚒️ Hotwash</h1>
         <p style={styles.subtitle}>
           SOC Playbook Visualization Tool — Choose a UI variant to explore
         </p>

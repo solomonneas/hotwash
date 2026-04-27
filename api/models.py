@@ -1,5 +1,5 @@
 """
-Data Models for Playbook Forge API
+Data Models for Hotwash API
 
 Defines Pydantic models for request/response validation and type safety.
 """

@@ -2,7 +2,7 @@
 
 # Default target
 help:
-	@echo "Playbook Forge - Development Commands"
+	@echo "Hotwash - Development Commands"
 	@echo ""
 	@echo "Available targets:"
 	@echo "  make install    - Install all dependencies (backend + frontend)"

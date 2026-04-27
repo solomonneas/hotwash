@@ -140,7 +140,7 @@ const ImportView: React.FC = () => {
   return (
     <div className="import-view">
       <div className="import-header">
-        <h1>Playbook Forge</h1>
+        <h1>Hotwash</h1>
         <p className="import-subtitle">
           Convert markdown or mermaid playbooks into visual flowcharts
         </p>

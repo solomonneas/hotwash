@@ -114,7 +114,7 @@ const TOUR_STEPS: DriverStep[] = [
     popover: {
       title: '🎨 Variant Picker',
       description:
-        'Playbook Forge ships with 5 unique UI themes — from military field manuals to SOC dashboards to academic papers. Try them all!',
+        'Hotwash ships with 5 unique UI themes — from military field manuals to SOC dashboards to academic papers. Try them all!',
       side: 'right',
       align: 'end',
     },

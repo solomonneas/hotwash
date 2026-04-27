@@ -233,7 +233,7 @@ def export_playbook(
         export_metadata={
             "exported_at": datetime.now(timezone.utc),
             "format_version": "1.0",
-            "generator": "Playbook Forge",
+            "generator": "Hotwash",
         },
     )
 

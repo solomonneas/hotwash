@@ -1,5 +1,5 @@
 """
-Parsers Module for Playbook Forge
+Parsers Module for Hotwash
 
 Contains parsers for converting different formats to flowchart graphs.
 """

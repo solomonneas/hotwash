@@ -1,5 +1,5 @@
 """
-Mermaid Parser for Playbook Forge
+Mermaid Parser for Hotwash
 
 Converts Mermaid flowchart syntax into a node/edge graph format compatible with React Flow.
 

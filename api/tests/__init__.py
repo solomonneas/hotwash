@@ -1,3 +1,3 @@
 """
-Tests Module for Playbook Forge API
+Tests Module for Hotwash API
 """

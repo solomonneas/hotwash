@@ -1,5 +1,5 @@
 """
-SQLAlchemy ORM models for Playbook Forge.
+SQLAlchemy ORM models for Hotwash.
 
 Tables: Playbook, Tag, PlaybookTag, PlaybookVersion
 """

@@ -2,7 +2,7 @@
 
 ## System Overview
 
-Playbook Forge is a dual-stack application: a React frontend for interactive flowchart visualization and an optional FastAPI backend for playbook storage and AI-powered generation.
+Hotwash is a dual-stack application: a React frontend for interactive flowchart visualization and an optional FastAPI backend for playbook storage and AI-powered generation.
 
 ## Tech Stack
 
