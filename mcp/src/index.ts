@@ -5,15 +5,16 @@ import { getConfig } from "./config.js";
 import { registerArtifactTools } from "./tools/artifacts.js";
 import { registerPlaybookTools } from "./tools/playbooks.js";
 import { registerRunTools } from "./tools/runs.js";
+import { registerSuggestionTools } from "./tools/suggestions.js";
 
 async function main(): Promise<void> {
   const config = getConfig();
 
   const server = new McpServer({
     name: "hotwash-mcp",
-    version: "0.1.0",
+    version: "0.2.0",
     description:
-      "Drive Hotwash incident response playbooks: list playbooks, start runs against incidents, advance steps, attach evidence, and query timelines. Wraps the Hotwash REST API.",
+      "Drive Hotwash incident response playbooks: list playbooks, start runs against incidents, advance steps, attach evidence, query timelines, and review the Wazuh ingest suggestion queue. Wraps the Hotwash REST API.",
   });
 
   const client = new HotwashClient(config);
@@ -21,6 +22,7 @@ async function main(): Promise<void> {
   registerPlaybookTools(server, client);
   registerRunTools(server, client);
   registerArtifactTools(server, client);
+  registerSuggestionTools(server, client);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);

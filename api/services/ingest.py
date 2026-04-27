@@ -15,8 +15,9 @@ import re
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 
-from sqlalchemy import desc
+from sqlalchemy import desc, update
 from sqlalchemy.orm import Session
+from pydantic import ValidationError
 
 from api.crypto import decrypt_secret
 from api.orm_models import (
@@ -38,8 +39,29 @@ INCIDENT_TITLE_MAX = 255
 # Reasons that should anchor cooldown lookups. mode_off and no_match are
 # excluded so flipping a mapping from off to suggest, or fixing a mis-aimed
 # integration, does not silently swallow the first legitimate alert that
-# follows.
-COOLDOWN_ANCHOR_REASONS = ("dispatched_auto", "dispatched_suggest", "cooldown")
+# follows. suggestion_dismissed IS included so dismissing a noisy suggestion
+# anchors the cooldown window and prevents the same fingerprint from
+# re-firing immediately.
+COOLDOWN_ANCHOR_REASONS = (
+    "dispatched_auto",
+    "dispatched_suggest",
+    "cooldown",
+    "suggestion_dismissed",
+)
+
+
+class SuggestionStateError(Exception):
+    """Raised when a suggestion is in a state that prevents the requested operation.
+
+    The ``code`` attribute classifies the failure for the router boundary so
+    we can return a generic, user-safe message without leaking internal state
+    machine wording. ``message`` is detailed and intended for operator logs.
+    """
+
+    def __init__(self, code: str, message: str) -> None:
+        super().__init__(message)
+        self.code = code
+
 
 _HEX64_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 
@@ -225,7 +247,19 @@ def _create_execution(
     alert: WazuhAlertIngest,
     raw_alert: Dict[str, Any],
     fingerprint: str,
+    *,
+    started_by: str = "wazuh-ingest",
+    event_type: str = "ingested_from_wazuh",
+    event_actor: str = "wazuh-ingest",
+    event_description: Optional[str] = None,
 ) -> Execution:
+    """Build an Execution from a Wazuh alert + mapping pair.
+
+    Used by both the auto-dispatch path (called from ``process_alert``) and the
+    accept-suggestion path (called from ``accept_suggestion``). The ``started_by``
+    and ``event_*`` kwargs let the caller stamp the audit trail with the right
+    origin without duplicating the build logic.
+    """
     playbook = (
         db.query(Playbook)
         .filter(Playbook.id == mapping.playbook_id, Playbook.is_deleted.is_(False))
@@ -248,7 +282,7 @@ def _create_execution(
         playbook_id=playbook.id,
         incident_title=_incident_title(alert),
         incident_id=_incident_id(alert),
-        started_by="wazuh-ingest",
+        started_by=started_by,
         status="active",
         steps_json=serialize_steps(steps),
         context_json=json.dumps(context),
@@ -256,16 +290,19 @@ def _create_execution(
     db.add(execution)
     db.flush()
 
+    if event_description is None:
+        event_description = (
+            f"Auto-dispatched from Wazuh mapping '{mapping.name}' "
+            f"(rule {alert.rule.id if alert.rule else '?'}, "
+            f"agent {alert.agent.name if alert.agent else '?'})"
+        )
+
     db.add(
         ExecutionEvent(
             execution_id=execution.id,
-            event_type="ingested_from_wazuh",
-            actor="wazuh-ingest",
-            description=(
-                f"Auto-dispatched from Wazuh mapping '{mapping.name}' "
-                f"(rule {alert.rule.id if alert.rule else '?'}, "
-                f"agent {alert.agent.name if alert.agent else '?'})"
-            ),
+            event_type=event_type,
+            actor=event_actor,
+            description=event_description,
         )
     )
     db.flush()
@@ -395,3 +432,223 @@ def mapping_secret(mapping: WazuhMapping) -> Optional[str]:
     if not mapping.hmac_secret_encrypted:
         return None
     return decrypt_secret(mapping.hmac_secret_encrypted)
+
+
+# --- Suggestion accept / dismiss ---
+
+
+def load_suggestion(db: Session, suggestion_id: int) -> Optional[IngestSuggestion]:
+    return db.query(IngestSuggestion).filter(IngestSuggestion.id == suggestion_id).first()
+
+
+def _decode_alert_payload(suggestion: IngestSuggestion) -> tuple[WazuhAlertIngest, Dict[str, Any]]:
+    if not suggestion.alert_payload_json:
+        raise SuggestionStateError(
+            "inconsistent", f"Suggestion {suggestion.id} has no stored alert payload"
+        )
+    try:
+        raw_alert = json.loads(suggestion.alert_payload_json)
+    except json.JSONDecodeError as exc:
+        raise SuggestionStateError(
+            "inconsistent",
+            f"Suggestion {suggestion.id} alert_payload_json is not valid JSON",
+        ) from exc
+    if not isinstance(raw_alert, dict):
+        raise SuggestionStateError(
+            "inconsistent",
+            f"Suggestion {suggestion.id} alert_payload is not a JSON object",
+        )
+    try:
+        alert = WazuhAlertIngest.model_validate(raw_alert)
+    except ValidationError as exc:
+        raise SuggestionStateError(
+            "inconsistent",
+            f"Suggestion {suggestion.id} alert_payload no longer matches schema",
+        ) from exc
+    return alert, raw_alert
+
+
+def accept_suggestion(db: Session, suggestion_id: int) -> tuple[Execution, bool]:
+    """Promote a pending suggestion into an Execution.
+
+    Returns ``(execution, already_accepted)``. ``already_accepted=True`` means
+    the suggestion had previously been accepted and we returned the existing
+    Execution unchanged. ``already_accepted=False`` means we created a new
+    Execution and transitioned the suggestion's state.
+
+    Raises ``LookupError`` if the suggestion does not exist.
+    Raises ``SuggestionStateError`` if the suggestion was dismissed, if the
+    underlying mapping or playbook has been deleted, or if a concurrent caller
+    transitioned the row out from under us.
+    """
+    suggestion = load_suggestion(db, suggestion_id)
+    if suggestion is None:
+        raise LookupError(f"Suggestion {suggestion_id} not found")
+
+    if suggestion.state == "accepted":
+        if not suggestion.accepted_execution_id:
+            raise SuggestionStateError(
+                "inconsistent",
+                f"Suggestion {suggestion_id} is accepted but has no execution_id",
+            )
+        existing = (
+            db.query(Execution)
+            .filter(Execution.id == suggestion.accepted_execution_id)
+            .first()
+        )
+        if existing is None:
+            raise SuggestionStateError(
+                "inconsistent",
+                f"Suggestion {suggestion_id} references a deleted execution",
+            )
+        return existing, True
+
+    if suggestion.state == "dismissed":
+        raise SuggestionStateError(
+            "already_dismissed", f"Suggestion {suggestion_id} was already dismissed"
+        )
+
+    if suggestion.state != "pending":
+        raise SuggestionStateError(
+            "inconsistent",
+            f"Suggestion {suggestion_id} is in unexpected state {suggestion.state!r}",
+        )
+
+    mapping = suggestion.mapping
+    if mapping is None:
+        raise SuggestionStateError(
+            "inconsistent",
+            f"Suggestion {suggestion_id} references a deleted mapping",
+        )
+
+    alert, raw_alert = _decode_alert_payload(suggestion)
+
+    try:
+        execution = _create_execution(
+            db,
+            mapping,
+            alert,
+            raw_alert,
+            suggestion.fingerprint,
+            started_by="hotwash-suggestion",
+            event_type="accepted_from_suggestion",
+            event_actor="hotwash-suggestion",
+            event_description=(
+                f"Accepted ingest suggestion #{suggestion.id} "
+                f"(rule {alert.rule.id if alert.rule else '?'}, "
+                f"agent {alert.agent.name if alert.agent else '?'})"
+            ),
+        )
+    except LookupError as exc:
+        # _create_execution raises LookupError if the mapping points at a
+        # playbook that has been soft-deleted. Map to a coded state error so
+        # the router returns 409 instead of the catch-all 404 path.
+        raise SuggestionStateError(
+            "inconsistent",
+            f"Suggestion {suggestion_id} cannot be accepted: {exc}",
+        ) from exc
+
+    # Atomically transition pending -> accepted. If another caller raced us
+    # (single-process uvicorn keeps this rare; multi-worker is a documented
+    # follow-up), rowcount will be 0 and we surface the conflict. The pending
+    # filter prevents stomping a concurrent dismiss.
+    now = datetime.now(timezone.utc)
+    result = db.execute(
+        update(IngestSuggestion)
+        .where(
+            IngestSuggestion.id == suggestion_id,
+            IngestSuggestion.state == "pending",
+        )
+        .values(
+            state="accepted",
+            accepted_execution_id=execution.id,
+            resolved_at=now,
+        )
+    )
+    if result.rowcount == 0:
+        db.rollback()
+        raise SuggestionStateError(
+            "concurrent",
+            f"Suggestion {suggestion_id} state changed during accept; retry",
+        )
+
+    db.commit()
+    db.refresh(execution)
+    return execution, False
+
+
+def dismiss_suggestion(
+    db: Session,
+    suggestion_id: int,
+    reason: Optional[str] = None,
+) -> IngestSuggestion:
+    """Mark a pending suggestion dismissed and anchor cooldown for its fingerprint.
+
+    Writes an ``IngestSuppressionLog`` row with reason ``suggestion_dismissed``
+    so subsequent alerts with the same (mapping_id, rule_id, agent_id)
+    fingerprint hit the cooldown window. The optional human-supplied reason
+    is intentionally not persisted: ``IngestSuppressionLog.reason`` uses a
+    fixed vocabulary, and the free-form text could contain incident-sensitive
+    detail (IOCs, hostnames, alert wording) that does not belong in
+    application logs either. We record only that a reason was provided, not
+    its contents.
+
+    Raises ``LookupError`` if the suggestion does not exist.
+    Raises ``SuggestionStateError`` if the suggestion has already been
+    accepted or dismissed.
+    """
+    suggestion = load_suggestion(db, suggestion_id)
+    if suggestion is None:
+        raise LookupError(f"Suggestion {suggestion_id} not found")
+
+    if suggestion.state == "accepted":
+        raise SuggestionStateError(
+            "already_accepted",
+            f"Suggestion {suggestion_id} was already accepted; cannot dismiss",
+        )
+    if suggestion.state == "dismissed":
+        raise SuggestionStateError(
+            "already_dismissed", f"Suggestion {suggestion_id} was already dismissed"
+        )
+    if suggestion.state != "pending":
+        raise SuggestionStateError(
+            "inconsistent",
+            f"Suggestion {suggestion_id} is in unexpected state {suggestion.state!r}",
+        )
+
+    now = datetime.now(timezone.utc)
+    result = db.execute(
+        update(IngestSuggestion)
+        .where(
+            IngestSuggestion.id == suggestion_id,
+            IngestSuggestion.state == "pending",
+        )
+        .values(state="dismissed", resolved_at=now)
+    )
+    if result.rowcount == 0:
+        db.rollback()
+        raise SuggestionStateError(
+            "concurrent",
+            f"Suggestion {suggestion_id} state changed during dismiss; retry",
+        )
+
+    _log(
+        db,
+        suggestion.mapping_id,
+        suggestion.fingerprint,
+        suggestion.rule_id,
+        suggestion.agent_id,
+        "suggestion_dismissed",
+    )
+    if reason is not None:
+        # Record only that a reason was provided; the contents may contain
+        # incident-sensitive analyst input.
+        logger.info(
+            "Suggestion %s dismissed with operator-supplied reason (%d chars)",
+            suggestion_id,
+            len(reason),
+        )
+
+    db.commit()
+    db.refresh(suggestion)
+    return suggestion

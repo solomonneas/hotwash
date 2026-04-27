@@ -66,3 +66,46 @@ export interface TimelineEvent {
   actor?: string | null;
   description: string;
 }
+
+export type SuggestionState = "pending" | "accepted" | "dismissed";
+
+export interface SuggestionSummary {
+  id: number;
+  mapping_id: number;
+  playbook_id: number;
+  state: SuggestionState | string;
+  fingerprint: string;
+  rule_id?: string | null;
+  agent_id?: string | null;
+  agent_name?: string | null;
+  description?: string | null;
+  accepted_execution_id?: number | null;
+  created_at: string;
+  resolved_at?: string | null;
+}
+
+export interface MappingSummary {
+  id: number;
+  name: string;
+  playbook_id: number;
+  mode: string;
+  rule_id_pattern?: string | null;
+  rule_groups_pattern?: string | null;
+  agent_name_pattern?: string | null;
+  cooldown_seconds: number;
+  has_hmac_secret: boolean;
+  enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SuggestionDetail extends SuggestionSummary {
+  alert_payload: Record<string, unknown>;
+  mapping: MappingSummary;
+  playbook_title?: string | null;
+}
+
+export interface SuggestionAcceptResponse {
+  execution: ExecutionSummary;
+  already_accepted: boolean;
+}

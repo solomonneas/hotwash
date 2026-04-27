@@ -65,6 +65,7 @@ app.include_router(executions.router, prefix="/api", tags=["executions"])
 app.include_router(executions_ws_router, prefix="/api", tags=["executions"])
 app.include_router(ingest.webhook_router, prefix="/api", tags=["ingest"])
 app.include_router(ingest.mappings_router, prefix="/api", tags=["ingest"])
+app.include_router(ingest.suggestions_router, prefix="/api", tags=["ingest"])
 
 
 @app.exception_handler(Exception)
