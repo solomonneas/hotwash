@@ -9,13 +9,13 @@
   <a href="https://solomonneas.dev/projects/playbook-forge"><img src="https://img.shields.io/badge/Portfolio-solomonneas.dev-22c55e?style=flat-square" alt="Portfolio" /></a>
 </p>
 
-# ⚒️ Solomon's Playbook Forge
+# ⚒️ Hotwash
 
 **IR runbook builder with visual flowcharts, SOAR execution engine, and AI playbook generation.**
 
-Playbook Forge transforms incident response playbooks from Markdown and Mermaid syntax into interactive flowchart visualizations with a full execution engine. SOC teams can build, execute, and track playbook runs step-by-step. AI generation creates playbooks from natural language prompts. SOAR integrations connect to real response platforms.
+Hotwash transforms incident response playbooks from Markdown and Mermaid syntax into interactive flowchart visualizations with a full execution engine. SOC teams can build, execute, and track playbook runs step-by-step. AI generation creates playbooks from natural language prompts. SOAR integrations connect to real response platforms.
 
-![Playbook Forge](docs/screenshots/dashboard.png)
+![Hotwash](docs/screenshots/dashboard.png)
 
 ---
 
@@ -42,8 +42,8 @@ Playbook Forge transforms incident response playbooks from Markdown and Mermaid 
 
 ```bash
 # Clone and install
-git clone https://github.com/solomonneas/playbook-forge.git
-cd playbook-forge
+git clone https://github.com/solomonneas/hotwash.git
+cd hotwash
 
 # Frontend
 cd web && npm install && npm run dev
@@ -153,7 +153,7 @@ All variants use the same parsing engine and React Flow canvas. Switch themes in
 ## Project Structure
 
 ```text
-playbook-forge/
+hotwash/
 ├── web/                      # React frontend
 │   ├── src/
 │   │   ├── components/

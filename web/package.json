@@ -1,8 +1,8 @@
 {
-  "name": "playbook-forge-web",
+  "name": "hotwash-web",
   "version": "0.1.0",
   "private": true,
-  "description": "Frontend for Playbook Forge - Convert markdown/mermaid playbooks to visual IR flowcharts",
+  "description": "Frontend for Hotwash - Convert markdown/mermaid playbooks to visual IR flowcharts",
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
