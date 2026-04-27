@@ -98,7 +98,7 @@ To enable AI generation:
 
 ## Theme Variants
 
-Access Playbook Forge variants directly:
+Access Hotwash variants directly:
 
 - `http://localhost:5177/` - SOC theme (default)
 - `http://localhost:5177/?theme=analyst` - Analyst theme

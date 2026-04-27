@@ -1,5 +1,5 @@
 """
-Seed script for Playbook Forge database.
+Seed script for Hotwash database.
 
 Reads markdown playbooks from the shared workspace and inserts them
 when the database is empty.

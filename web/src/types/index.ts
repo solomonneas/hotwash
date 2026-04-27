@@ -1,5 +1,5 @@
 /**
- * Type definitions for Playbook Forge
+ * Type definitions for Hotwash
  *
  * Defines the data structures used throughout the application,
  * matching the API response format.

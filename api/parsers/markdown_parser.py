@@ -1,5 +1,5 @@
 """
-Markdown Parser for Playbook Forge
+Markdown Parser for Hotwash
 
 Converts structured markdown playbooks into a node/edge graph format compatible with React Flow.
 

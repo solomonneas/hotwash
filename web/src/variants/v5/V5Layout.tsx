@@ -48,7 +48,7 @@ const V5Layout: React.FC<V5LayoutProps> = ({
             className="v5-header-title"
             onClick={() => onNavigate('#/5')}
           >
-            Playbook Forge
+            Hotwash
           </button>
 
           <nav className="v5-nav">
@@ -93,7 +93,7 @@ const V5Layout: React.FC<V5LayoutProps> = ({
       <footer className="v5-footer">
         <hr className="v5-rule" />
         <div className="v5-footer-inner">
-          <span>Playbook Forge — Variant 5: Minimal Academic</span>
+          <span>Hotwash — Variant 5: Minimal Academic</span>
           <span className="v5-footer-dot">·</span>
           <span>{new Date().getFullYear()}</span>
         </div>

@@ -85,7 +85,7 @@ const V4Layout: React.FC<V4LayoutProps> = ({
             onClick={() => onNavigate('#/4')}
           >
             <span className="v4-topbar-logo-icon">⚒</span>
-            PLAYBOOK FORGE
+            HOTWASH
           </button>
           <span className="v4-topbar-version">v4</span>
 
@@ -129,13 +129,13 @@ const V4Layout: React.FC<V4LayoutProps> = ({
       {/* Floating title block — bottom-right */}
       <div className="v4-title-block">
         <div className="v4-title-block-header">
-          PLAYBOOK FORGE — SCHEMATIC
+          HOTWASH — SCHEMATIC
         </div>
         <div className="v4-title-block-body">
           <div className="v4-title-block-row">
             <span className="v4-title-block-label">Project</span>
             <span className="v4-title-block-value">
-              {titleBlockData?.title || 'Playbook Forge'}
+              {titleBlockData?.title || 'Hotwash'}
             </span>
           </div>
           <div className="v4-title-block-row">

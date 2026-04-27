@@ -35,7 +35,7 @@ const DocsPage: React.FC = () => {
       <section id="docs-overview" className="docs-section">
         <h2>1. Overview</h2>
         <p>
-          Playbook Forge transforms textual incident response playbooks — written in Markdown
+          Hotwash transforms textual incident response playbooks — written in Markdown
           or Mermaid syntax — into interactive visual flowcharts. It provides SOC analysts,
           incident responders, and security teams with an intuitive way to create, browse,
           and navigate procedural workflows.
@@ -240,7 +240,7 @@ Update affected packages and run regression tests.`}</code>
       <section id="docs-nodes" className="docs-section">
         <h2>5. Node Types Explained</h2>
         <p>
-          Playbook Forge uses five distinct node types, each with a specific role
+          Hotwash uses five distinct node types, each with a specific role
           in the IR workflow and unique visual styling per variant:
         </p>
         <div className="docs-node-grid">
@@ -290,7 +290,7 @@ Update affected packages and run regression tests.`}</code>
       <section id="docs-ir" className="docs-section">
         <h2>6. IR Methodology</h2>
         <p>
-          Playbook Forge playbooks are designed around the NIST SP 800-61 incident response
+          Hotwash playbooks are designed around the NIST SP 800-61 incident response
           lifecycle, adapted for modern SOC workflows:
         </p>
         <ol>

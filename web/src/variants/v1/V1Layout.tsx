@@ -76,7 +76,7 @@ const V1Layout: React.FC<V1LayoutProps> = ({
         {/* Sidebar TOC */}
         <aside className="v1-sidebar">
           <div className="v1-sidebar-header">
-            PLAYBOOK FORGE
+            HOTWASH
             <span className="v1-manual-title">FM 6-02 — Operational Playbook Reference</span>
           </div>
 

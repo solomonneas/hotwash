@@ -1,5 +1,5 @@
 """
-Pydantic schemas for Playbook Forge CRUD API.
+Pydantic schemas for Hotwash CRUD API.
 """
 
 from datetime import datetime
@@ -86,7 +86,7 @@ class PlaybookVersionOut(BaseModel):
 class ExportMetadata(BaseModel):
     exported_at: datetime
     format_version: str = "1.0"
-    generator: str = "Playbook Forge"
+    generator: str = "Hotwash"
 
 
 class PlaybookExport(BaseModel):

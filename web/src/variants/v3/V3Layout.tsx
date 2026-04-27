@@ -83,7 +83,7 @@ const V3Layout: React.FC<V3LayoutProps> = ({
               onClick={() => onNavigate('#/3')}
             >
               <span className="v3-sidebar-logo-icon">⚒</span>
-              <span className="v3-sidebar-logo-text">Playbook Forge</span>
+              <span className="v3-sidebar-logo-text">Hotwash</span>
               <span className="v3-sidebar-logo-version">v3</span>
             </button>
           </div>
@@ -162,7 +162,7 @@ const V3Layout: React.FC<V3LayoutProps> = ({
                 className="v3-breadcrumb-link"
                 onClick={() => onNavigate('#/3')}
               >
-                Playbook Forge
+                Hotwash
               </button>
               {breadcrumbs.map((crumb, i) => (
                 <React.Fragment key={i}>

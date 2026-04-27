@@ -1,5 +1,5 @@
 """
-Playbook Forge API - Main Application Entry Point
+Hotwash API - Main Application Entry Point
 
 FastAPI backend for converting markdown/mermaid playbooks to visual IR flowcharts.
 """
@@ -37,7 +37,7 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(
-    title="Playbook Forge API",
+    title="Hotwash API",
     description="Convert markdown/mermaid playbooks to visual IR flowcharts",
     version="0.1.0",
     lifespan=lifespan,
@@ -78,7 +78,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 @app.get("/")
 async def root():
     """Health check endpoint."""
-    return {"status": "ok", "service": "playbook-forge-api"}
+    return {"status": "ok", "service": "hotwash-api"}
 
 
 @app.get("/api/health")
@@ -86,6 +86,6 @@ async def health():
     """Detailed health check endpoint."""
     return {
         "status": "healthy",
-        "service": "playbook-forge-api",
+        "service": "hotwash-api",
         "version": "0.1.0"
     }

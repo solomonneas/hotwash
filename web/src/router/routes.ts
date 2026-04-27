@@ -1,5 +1,5 @@
 /**
- * Route definitions for Playbook Forge
+ * Route definitions for Hotwash
  *
  * Hash-based routing (no react-router-dom dependency).
  * Routes:

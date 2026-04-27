@@ -1,5 +1,5 @@
 """
-Database configuration for Playbook Forge.
+Database configuration for Hotwash.
 
 SQLAlchemy engine + session setup with SQLite backend.
 """

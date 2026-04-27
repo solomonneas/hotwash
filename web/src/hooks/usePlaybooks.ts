@@ -134,7 +134,7 @@ function mapApiPlaybookToLibraryItem(playbook: ApiPlaybook | ApiPlaybookSummary)
   const metadata: PlaybookMetadata = {
     title: playbook.title || parsedMeta?.title || 'Untitled Playbook',
     type: parsedMeta?.type || formatCategoryLabel(playbook.category),
-    tooling: parsedMeta?.tooling || 'Playbook Forge',
+    tooling: parsedMeta?.tooling || 'Hotwash',
     difficulty: parsedMeta?.difficulty,
     estimatedTime: parsedMeta?.estimatedTime,
     lastUpdated: parsedMeta?.lastUpdated || formatUpdatedDate(playbook.updated_at),

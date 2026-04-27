@@ -1,5 +1,5 @@
 /**
- * API Client for Playbook Forge
+ * API Client for Hotwash
  *
  * Typed fetch wrappers for CRUD + version history.
  */

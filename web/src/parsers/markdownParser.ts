@@ -1,5 +1,5 @@
 /**
- * Markdown Parser for Playbook Forge (Client-Side)
+ * Markdown Parser for Hotwash (Client-Side)
  *
  * TypeScript port of api/parsers/markdown_parser.py
  *

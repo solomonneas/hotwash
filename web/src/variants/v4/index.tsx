@@ -43,7 +43,7 @@ const V4App: React.FC<V4AppProps> = ({ route, onNavigate }) => {
     const totalEdges = playbooks.reduce((s, p) => s + p.graph.edges.length, 0);
 
     return {
-      title: 'Playbook Forge',
+      title: 'Hotwash',
       type: 'Interactive Blueprint',
       nodes: totalNodes,
       edges: totalEdges,

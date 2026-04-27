@@ -49,4 +49,4 @@ export const V2_COLORS = {
 } as const;
 
 /** Status bar config */
-export const STATUS_BAR_TEXT = 'PLAYBOOK FORGE • SOC OPERATIONS CENTER';
+export const STATUS_BAR_TEXT = 'HOTWASH • SOC OPERATIONS CENTER';
