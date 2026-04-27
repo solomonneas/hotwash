@@ -11,8 +11,9 @@ import hashlib
 import hmac
 import json
 import logging
+import re
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional
 
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
@@ -34,6 +35,14 @@ logger = logging.getLogger(__name__)
 VALID_MODES = {"auto", "suggest", "off"}
 INCIDENT_TITLE_MAX = 255
 
+# Reasons that should anchor cooldown lookups. mode_off and no_match are
+# excluded so flipping a mapping from off to suggest, or fixing a mis-aimed
+# integration, does not silently swallow the first legitimate alert that
+# follows.
+COOLDOWN_ANCHOR_REASONS = ("dispatched_auto", "dispatched_suggest", "cooldown")
+
+_HEX64_RE = re.compile(r"^[0-9a-fA-F]{64}$")
+
 
 # --- HMAC ---
 
@@ -51,6 +60,8 @@ def parse_signature_header(value: Optional[str]) -> Optional[str]:
 
 
 def verify_hmac(secret: str, body: bytes, provided_hex: str) -> bool:
+    if not _HEX64_RE.match(provided_hex or ""):
+        return False
     expected = hmac.new(secret.encode("utf-8"), body, hashlib.sha256).hexdigest()
     return hmac.compare_digest(expected.lower(), provided_hex.lower())
 
@@ -137,7 +148,10 @@ def fingerprint_for(mapping_id: int, rule_id: Optional[str], agent_id: Optional[
 def _last_seen(db: Session, fingerprint: str) -> Optional[datetime]:
     row = (
         db.query(IngestSuppressionLog)
-        .filter(IngestSuppressionLog.fingerprint == fingerprint)
+        .filter(
+            IngestSuppressionLog.fingerprint == fingerprint,
+            IngestSuppressionLog.reason.in_(COOLDOWN_ANCHOR_REASONS),
+        )
         .order_by(desc(IngestSuppressionLog.created_at))
         .first()
     )
@@ -156,6 +170,10 @@ def is_in_cooldown(
     if last is None:
         return False
     current = now or datetime.now(timezone.utc)
+    # SQLite's CURRENT_TIMESTAMP (which server_default=func.now() resolves to)
+    # is documented UTC, so naive timestamps from the DB can be safely tagged
+    # as UTC. If the schema ever moves to DateTime(timezone=True), `last` will
+    # already be aware and we keep it as-is.
     last_aware = last if last.tzinfo else last.replace(tzinfo=timezone.utc)
     return (current - last_aware) < timedelta(seconds=cooldown_seconds)
 
@@ -291,6 +309,13 @@ def process_alert(
     alert against the mapping to reject mis-aimed callers, then dispatch by mode
     with cooldown dedup.
 
+    Cooldown dedup is read-modify-write and not atomic across concurrent
+    workers: two webhook requests with the same fingerprint that race the
+    `is_in_cooldown` check can both dispatch. Hotwash currently ships as a
+    single-process uvicorn deployment, so the practical race window is narrow.
+    Multi-worker deployments will need a unique constraint on the suppression
+    log keyed by fingerprint plus a time bucket to make the race deterministic.
+
     Returns a dict shaped like IngestResponse fields.
     """
     if not alert_matches_mapping(alert, mapping):
@@ -355,7 +380,7 @@ def process_alert(
             "suggestion_id": suggestion.id,
         }
 
-    # Should never happen — mode validated on insert/update
+    # Should never happen: mode is validated on insert/update.
     raise ValueError(f"Unknown mapping mode: {mapping.mode!r}")
 
 

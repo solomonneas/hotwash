@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import re
 import secrets as secrets_module
 from pathlib import Path
@@ -223,11 +222,11 @@ def seed_wazuh_mappings(db: Session) -> int:
         secret = secrets_module.token_urlsafe(32)
         logger.warning(
             "Generated ephemeral Wazuh ingest seed secret for mapping %r. "
-            "Set HOTWASH_WAZUH_SEED_SECRET to make this deterministic across restarts. "
-            "Secret: %s",
+            "Set HOTWASH_WAZUH_SEED_SECRET to make this deterministic across "
+            "restarts; otherwise rotate via PATCH /api/ingest/mappings/{id}.",
             SEED_WAZUH_MAPPING_NAME,
-            secret,
         )
+        logger.debug("Wazuh seed secret: %s", secret)
 
     encrypted = encrypt_secret(secret)
     if not encrypted:

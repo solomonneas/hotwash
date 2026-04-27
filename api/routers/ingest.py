@@ -3,11 +3,11 @@ Wazuh ingest router.
 
 Two router instances mounted under /api/ingest:
 
-- `webhook_router`: POST /api/ingest/wazuh — HMAC-authenticated, no global
+- `webhook_router`: POST /api/ingest/wazuh, HMAC-authenticated. No global
   X-API-Key dep so Wazuh's integration script can call it without setting
-  custom headers it can't easily produce.
+  custom headers it cannot easily produce.
 
-- `mappings_router`: CRUD on /api/ingest/mappings/* — gated by X-API-Key like
+- `mappings_router`: CRUD on /api/ingest/mappings/*, gated by X-API-Key like
   the rest of the dashboard surface.
 """
 
@@ -42,6 +42,11 @@ from api.services.ingest import (
 )
 
 logger = logging.getLogger(__name__)
+
+# Cap inbound webhook bodies to keep a misbehaving (or compromised) Wazuh
+# integration from forcing memory + DB growth with one giant alert payload.
+# Real Wazuh alerts are typically a few KB; 256 KB is a generous ceiling.
+MAX_INGEST_BODY_BYTES = 256 * 1024
 
 webhook_router = APIRouter()
 mappings_router = APIRouter(dependencies=[Depends(get_api_key)])
@@ -124,22 +129,35 @@ async def ingest_wazuh_alert(
         logger.error("Mapping %s has no usable HMAC secret", mapping.id)
         raise HTTPException(status_code=401, detail="Invalid signature or mapping")
 
+    # Enforce the size cap before reading the body into memory when the client
+    # honestly declares Content-Length, then re-check after read for safety.
+    declared_length = request.headers.get("content-length")
+    if declared_length is not None:
+        try:
+            if int(declared_length) > MAX_INGEST_BODY_BYTES:
+                raise HTTPException(status_code=413, detail="Alert payload too large")
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid Content-Length header")
+
     body = await request.body()
+    if len(body) > MAX_INGEST_BODY_BYTES:
+        raise HTTPException(status_code=413, detail="Alert payload too large")
+
     provided = parse_signature_header(x_hotwash_signature)
     if not provided or not verify_hmac(secret, body, provided):
         raise HTTPException(status_code=401, detail="Invalid signature or mapping")
 
     try:
         raw_alert = json.loads(body.decode("utf-8")) if body else {}
-    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise HTTPException(status_code=400, detail=f"Invalid JSON body: {exc}")
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
     if not isinstance(raw_alert, dict):
         raise HTTPException(status_code=400, detail="Alert body must be a JSON object")
 
     try:
         alert = WazuhAlertIngest.model_validate(raw_alert)
-    except ValidationError as exc:
-        raise HTTPException(status_code=400, detail=exc.errors())
+    except ValidationError:
+        raise HTTPException(status_code=400, detail="Invalid alert payload shape")
 
     result = process_alert(db, mapping, alert, raw_alert)
     return IngestResponse(**result)
