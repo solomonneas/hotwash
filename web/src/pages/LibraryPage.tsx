@@ -4,7 +4,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { useHashRouter } from '../router';
-import { listPlaybooks, deletePlaybook, ApiPlaybookSummary } from '../api/client';
+import { listPlaybooks, deletePlaybook, listSuggestions, ApiPlaybookSummary } from '../api/client';
 import { allPlaybooks } from '../data';
 import { PlaybookLibraryItem } from '../types';
 import AIImprovePanel from '../components/AIImprovePanel';
@@ -40,6 +40,27 @@ const LibraryPage: React.FC = () => {
   const [deleteTarget, setDeleteTarget] = useState<LibraryPlaybook | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [improveTarget, setImproveTarget] = useState<LibraryPlaybook | null>(null);
+  const [pendingCount, setPendingCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const refresh = async () => {
+      try {
+        const rows = await listSuggestions({ state: 'pending' });
+        if (!cancelled) setPendingCount(rows.length);
+      } catch {
+        if (!cancelled) setPendingCount(null);
+      }
+    };
+    refresh();
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === 'visible') refresh();
+    }, 60000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -126,10 +147,23 @@ const LibraryPage: React.FC = () => {
                 Executions
               </button>
               <button
-                className="px-4 py-2 rounded-md bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700"
+                className="px-4 py-2 rounded-md bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 inline-flex items-center gap-2"
                 onClick={() => navigate('#/suggestions')}
+                aria-label={
+                  pendingCount && pendingCount > 0
+                    ? `Suggestions, ${pendingCount} pending`
+                    : 'Suggestions'
+                }
               >
                 Suggestions
+                {pendingCount !== null && pendingCount > 0 && (
+                  <span
+                    className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-200 text-xs font-medium"
+                    aria-hidden="true"
+                  >
+                    {pendingCount > 99 ? '99+' : pendingCount}
+                  </span>
+                )}
               </button>
               <button
                 className="px-4 py-2 rounded-md bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700"
@@ -338,12 +372,14 @@ function mapApiToLibraryItem(playbook: ApiPlaybookSummary): LibraryPlaybook {
   const categoryLabel = formatCategoryLabel(playbook.category);
   const categoryKey = normalizeCategoryKey(playbook.category);
   return {
-    id: playbook.id,
+    id: String(playbook.id),
     title: playbook.title || 'Untitled Playbook',
     description: playbook.description || '',
     categoryLabel,
     categoryKey,
-    tags: playbook.tags || [],
+    tags: (playbook.tags || []).map((tag) =>
+      typeof tag === 'string' ? tag : tag.name,
+    ),
     updatedAt: formatUpdatedDate(playbook.updated_at),
     nodeCount: playbook.node_count ?? playbook.graph_json?.nodes?.length,
     content: playbook.content_markdown,
