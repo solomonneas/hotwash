@@ -1,21 +1,29 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=white" alt="React" />
-  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Python-3.9+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python" />
-  <img src="https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
-  <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="MIT License" />
-
-  <a href="https://solomonneas.dev/projects/playbook-forge"><img src="https://img.shields.io/badge/Portfolio-solomonneas.dev-22c55e?style=flat-square" alt="Portfolio" /></a>
+  <img src="docs/assets/hotwash-banner.jpg" alt="Hotwash banner">
 </p>
 
-# ⚒️ Hotwash
+<h1 align="center">⚒️ Hotwash</h1>
 
-**IR runbook builder with visual flowcharts, SOAR execution engine, and AI playbook generation.**
+<p align="center">
+  <strong>IR runbook builder with visual flowcharts, SOAR execution, and AI playbook generation.</strong>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/React-18.2-61DAFB?style=for-the-badge&logo=react&logoColor=0f172a" alt="React 18.2">
+  <img src="https://img.shields.io/badge/TypeScript-5.3-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript 5.3">
+  <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.9+">
+  <img src="https://img.shields.io/badge/FastAPI-0.109-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI 0.109">
+  <img src="https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS 3.4">
+  <img src="https://img.shields.io/badge/MCP-server-7c3aed?style=for-the-badge" alt="MCP server">
+  <img src="https://img.shields.io/badge/Wazuh-ingest-2563eb?style=for-the-badge" alt="Wazuh ingest">
+  <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="MIT license">
+</p>
+
+<p align="center">
+  <a href="https://solomonneas.dev/projects/playbook-forge"><img src="https://img.shields.io/badge/Portfolio-solomonneas.dev-22c55e?style=for-the-badge" alt="Portfolio"></a>
+</p>
 
 Hotwash transforms incident response playbooks from Markdown and Mermaid syntax into interactive flowchart visualizations with a full execution engine. SOC teams can build, execute, and track playbook runs step-by-step. AI generation creates playbooks from natural language prompts. SOAR integrations connect to real response platforms.
-
-![Hotwash](docs/screenshots/dashboard.png)
 
 ---
 
@@ -61,13 +69,13 @@ Backend: **http://localhost:8000** (optional)
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
-| **Frontend** | React 18 | Interactive dashboards |
-| **Language** | TypeScript 5 | Type safety |
-| **Styling** | Tailwind CSS 3 | Utility-first CSS |
-| **Canvas** | React Flow 11 | Node-edge graph visualization |
+| **Frontend** | React 18.2 | Interactive dashboards |
+| **Language** | TypeScript 5.3 | Type safety |
+| **Styling** | Tailwind CSS 3.4 | Utility-first CSS |
+| **Canvas** | React Flow Renderer 10.3 | Node-edge graph visualization |
 | **State** | Zustand | Global state management |
 | **Bundler** | Vite 5 | Dev server and build |
-| **Backend** (Optional) | FastAPI | Playbook generation and storage |
+| **Backend** (Optional) | FastAPI 0.109 | Playbook generation and storage |
 | **Parser** | Custom Markdown Parser | Inline playbook parsing |
 
 ---
