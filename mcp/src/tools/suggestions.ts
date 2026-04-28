@@ -75,7 +75,7 @@ export function registerSuggestionTools(server: McpServer, client: HotwashClient
         .string()
         .max(500)
         .optional()
-        .describe("Optional human-readable reason. Not persisted; only the fact a reason was provided is logged."),
+        .describe("Optional human-readable reason. Not persisted; only whether a reason was provided and its length are logged."),
       confirm: z
         .literal(true)
         .describe("Must be true. Acknowledges the suggestion will be dismissed and a cooldown anchor written for its fingerprint."),
