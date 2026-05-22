@@ -96,6 +96,24 @@ To enable AI generation:
 2. Set `GEMINI_API_KEY` in `.env`
 3. Set `ENABLE_AI_GENERATION=true`
 
+## Backend Integration Variables
+
+### `HOTWASH_PRIVATE_HOST_ALLOWLIST`
+
+Comma-separated list of CIDRs that override the SSRF block on outbound integration URLs. Default: empty (all RFC1918, loopback, and link-local blocked).
+
+Use for lab/dev only. For example, `HOTWASH_PRIVATE_HOST_ALLOWLIST=192.168.1.0/24,10.0.0.0/8` lets the API talk to a TheHive VM at `192.168.1.50`. Loopback (`127.0.0.0/8`) and link-local (`169.254.0.0/16`) are never allowed, even if listed.
+
+### `HOTWASH_LIVE_THEHIVE_URL` / `HOTWASH_LIVE_THEHIVE_API_KEY`
+
+Optional. Required only to run the opt-in TheHive live smoke test:
+
+```bash
+pytest api/tests/test_thehive_live.py -m live -v -s
+```
+
+See `docs/THEHIVE-INTEGRATION.md` for details.
+
 ## Theme Variants
 
 Access Hotwash variants directly:
