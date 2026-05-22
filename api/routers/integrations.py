@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from api.auth import get_api_key
 from api.crypto import decrypt_secret, encrypt_secret
 from api.database import get_db
+from api.integrations.clients.thehive import TheHiveClient, TheHiveError
 from api.integrations.config import Integration
 from api.integrations.mock_data import MOCK_HANDLERS
 from api.schemas import IntegrationOut, IntegrationUpdate
@@ -106,15 +107,41 @@ def test_integration(tool: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="No base_url configured")
 
     validate_integration_url(integration.base_url)
-    api_key = decrypt_secret(integration.api_key)
+    api_key_plain = decrypt_secret(integration.api_key)
 
+    if tool == "thehive":
+        client = TheHiveClient(
+            base_url=integration.base_url,
+            api_key=api_key_plain,
+            verify_ssl=integration.verify_ssl,
+        )
+        try:
+            result = client.status()
+        except TheHiveError as exc:
+            integration.last_checked = now
+            integration.last_status = "error" if exc.status_code else "disconnected"
+            db.commit()
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "message": str(exc),
+                    "upstream_status": exc.status_code,
+                    "details": exc.details,
+                },
+            ) from exc
+        integration.last_checked = now
+        integration.last_status = "connected"
+        db.commit()
+        return {"tool": tool, "mock_mode": False, "result": result}
+
+    # Fallback generic probe for tools without a real client yet.
     try:
         import requests
         resp = requests.get(
             integration.base_url,
             timeout=5,
             verify=integration.verify_ssl,
-            headers={"Authorization": f"Bearer {api_key}"} if api_key else {},
+            headers={"Authorization": f"Bearer {api_key_plain}"} if api_key_plain else {},
         )
         if resp.status_code in (200, 401, 403):
             integration.last_status = "connected"
