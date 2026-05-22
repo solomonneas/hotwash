@@ -8,6 +8,23 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers",
+        "live: tests that hit live external infrastructure; require env vars and are skipped by default",
+    )
+
+
+def pytest_collection_modifyitems(config, items):
+    marker_expr = config.getoption("-m") or ""
+    if "live" in marker_expr:
+        return
+    skip_live = pytest.mark.skip(reason="needs -m live to run")
+    for item in items:
+        if "live" in item.keywords:
+            item.add_marker(skip_live)
+
+
 @pytest.fixture
 def api_key(monkeypatch):
     """Force a known API key for tests instead of the auto-generated one."""
