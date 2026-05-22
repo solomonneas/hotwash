@@ -51,3 +51,59 @@ class TheHiveClient:
                 "Content-Type": "application/json",
             }
         )
+
+    def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        json: Any | None = None,
+        params: dict[str, Any] | None = None,
+    ) -> Any:
+        url = f"{self.base_url}{path}"
+        try:
+            resp = self._session.request(
+                method,
+                url,
+                json=json,
+                params=params,
+                timeout=self.timeout,
+                verify=self.verify_ssl,
+            )
+        except requests.RequestException as exc:
+            raise TheHiveError(
+                f"TheHive request failed: {exc}",
+                status_code=None,
+                details={"upstream": "connection_error"},
+            ) from exc
+
+        if resp.status_code == 401:
+            try:
+                body = resp.json()
+            except ValueError:
+                body = {}
+            raise TheHiveError(
+                "Invalid API key for TheHive",
+                status_code=401,
+                details=body,
+            )
+
+        if not resp.ok:
+            try:
+                body = resp.json()
+            except ValueError:
+                body = {"text": resp.text[:500]}
+            raise TheHiveError(
+                f"TheHive returned {resp.status_code}",
+                status_code=resp.status_code,
+                details=body,
+            )
+
+        try:
+            return resp.json()
+        except ValueError as exc:
+            raise TheHiveError(
+                "TheHive returned non-JSON response",
+                status_code=resp.status_code,
+                details={"text": resp.text[:500]},
+            ) from exc
