@@ -121,9 +121,13 @@ class TheHiveClient:
             status_info = {}
 
         version = "unknown"
-        versions = status_info.get("versions") if isinstance(status_info, dict) else None
-        if isinstance(versions, dict):
-            version = versions.get("TheHive") or versions.get("thehive") or "unknown"
+        if isinstance(status_info, dict):
+            top_version = status_info.get("version")
+            versions = status_info.get("versions")
+            if isinstance(top_version, str) and top_version:
+                version = top_version
+            elif isinstance(versions, dict):
+                version = versions.get("TheHive") or versions.get("thehive") or "unknown"
 
         return {
             "status": "connected",

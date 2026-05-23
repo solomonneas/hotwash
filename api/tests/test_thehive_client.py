@@ -122,6 +122,22 @@ def test_status_returns_connected_when_auth_ok():
     assert result["user"] == "admin@thehive.local"
 
 
+def test_status_reads_top_level_version_field():
+    """TheHive 5.4 returns {"version": "5.4.11-1"} at the top level, not nested under versions."""
+    client = TheHiveClient(base_url="http://example:9000", api_key="k")
+
+    def fake_request(method, url, **_):
+        if url.endswith("/api/v1/user/current"):
+            return _mock_response(200, json_body={"login": "admin"})
+        if url.endswith("/api/v1/status"):
+            return _mock_response(200, json_body={"version": "5.4.11-1", "config": {}})
+        return _mock_response(404)
+
+    with patch.object(client._session, "request", side_effect=fake_request):
+        result = client.status()
+    assert result["version"] == "5.4.11-1"
+
+
 def test_status_handles_missing_version_field():
     client = TheHiveClient(base_url="http://example:9000", api_key="k")
 
