@@ -34,7 +34,7 @@ class CreateAlertRequest(_Strict):
 
 
 class AddObservableRequest(_Strict):
-    case_id: str = Field(..., min_length=1, max_length=128)
+    case_id: str = Field(..., pattern=r"^~[A-Za-z0-9]+$", max_length=128)
     data_type: str = Field(..., min_length=1, max_length=64)
     data: str = Field(..., min_length=1)
     message: str | None = None

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any
+from urllib.parse import quote
 
 import requests
 
@@ -210,4 +211,5 @@ class TheHiveClient:
             payload["message"] = message
         if tags:
             payload["tags"] = tags
-        return self._request("POST", f"/api/v1/case/{case_id}/observable", json=payload)
+        encoded_case_id = quote(case_id, safe="")
+        return self._request("POST", f"/api/v1/case/{encoded_case_id}/observable", json=payload)

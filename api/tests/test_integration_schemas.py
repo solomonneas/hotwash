@@ -70,3 +70,29 @@ def test_add_observable_minimal():
 def test_add_observable_rejects_empty_data():
     with pytest.raises(ValidationError):
         AddObservableRequest(case_id="~1", data_type="ip", data="")
+
+
+def test_add_observable_rejects_path_injection_in_case_id():
+    """case_id must match TheHive's ID format (~ followed by alphanumerics).
+
+    Without strict validation, a caller could inject path segments or query
+    strings to redirect the request under Hotwash's credentials.
+    """
+    bad_ids = [
+        "~123/observable/other",
+        "../etc/passwd",
+        "~123?delete=true",
+        "~123#fragment",
+        "~123 with space",
+        "no-tilde",
+    ]
+    for bad in bad_ids:
+        with pytest.raises(ValidationError):
+            AddObservableRequest(case_id=bad, data_type="ip", data="1.2.3.4")
+
+
+def test_add_observable_accepts_real_thehive_ids():
+    """Sample IDs observed against TheHive 5.4: ~123, ~8288, ~40964216."""
+    for ok in ["~123", "~8288", "~40964216", "~A1"]:
+        req = AddObservableRequest(case_id=ok, data_type="ip", data="1.2.3.4")
+        assert req.case_id == ok

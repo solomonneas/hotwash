@@ -287,3 +287,16 @@ def test_add_observable_defaults():
     assert body["sighted"] is False
     assert "message" not in body
     assert "tags" not in body
+
+
+def test_add_observable_url_encodes_case_id():
+    """Defense in depth: even if route-level validation is bypassed (e.g. client
+    used from internal code), the URL builder must encode path segments so a
+    weird case_id cannot redirect the request to a different endpoint.
+    """
+    client = TheHiveClient(base_url="http://example:9000", api_key="k")
+    with patch.object(client._session, "request") as mocked:
+        mocked.return_value = _mock_response(201, json_body={"_id": "~O3"})
+        client.add_observable(case_id="weird/path?x=y", data_type="ip", data="1.2.3.4")
+    url = mocked.call_args[0][1]
+    assert url == "http://example:9000/api/v1/case/weird%2Fpath%3Fx%3Dy/observable"
