@@ -12,7 +12,7 @@ Parsing Rules:
 """
 
 import re
-from typing import List, Dict, Optional, Tuple, Set
+from typing import List, Dict, Optional, Tuple
 from api.models import PlaybookNode, PlaybookEdge, PlaybookGraph
 
 
@@ -42,6 +42,15 @@ class MermaidParser:
         (r'--->', 'solid'),                      # --->
         (r'---->', 'solid'),                     # ---->
     ]
+
+    EDGE_RE = re.compile(
+        r'--\s*(?P<solid_label>[^->\n]+?)\s*-->'
+        r'|-\.\s*(?P<dotted_label>[^.\n]+?)\s*\.->'
+        r'|==\s*(?P<bold_label>[^=\n]+?)\s*==>'
+        r'|(?P<solid>-{2,}>)'
+        r'|(?P<dotted>-\.->)'
+        r'|(?P<bold>==>)'
+    )
 
     def __init__(self):
         """Initialize the Mermaid parser."""
@@ -151,91 +160,84 @@ class MermaidParser:
         Args:
             line: Single line from Mermaid diagram
         """
-        # Check if line contains an edge
-        edge_found = False
-        for edge_pattern, edge_type in self.EDGE_PATTERNS:
-            if re.search(edge_pattern, line):
-                self._parse_edge_statement(line, edge_pattern, edge_type)
-                edge_found = True
-                break
-
-        # If no edge found, try to parse as standalone node
-        if not edge_found:
+        if self.EDGE_RE.search(line):
+            self._parse_edge_statement(line)
+        else:
             self._parse_node_definition(line)
 
-    def _parse_edge_statement(self, line: str, edge_pattern: str, edge_type: str) -> None:
+    def _parse_edge_statement(self, line: str) -> None:
         """
         Parse a line containing an edge (e.g., "A-->B" or "A--text-->B").
 
         Args:
             line: Line containing edge definition
-            edge_pattern: Regex pattern for the edge
-            edge_type: Type of edge (solid, dotted, bold)
         """
-        # Split by edge pattern
-        parts = re.split(edge_pattern, line)
-
-        if len(parts) < 2:
+        matches = list(self.EDGE_RE.finditer(line))
+        if not matches:
             return
 
-        # Extract source node
-        source_part = parts[0].strip()
-        source_id, source_label, source_type = self._extract_node_info(source_part)
+        node_parts = []
+        cursor = 0
+        for match in matches:
+            node_parts.append(line[cursor:match.start()].strip())
+            cursor = match.end()
+        node_parts.append(line[cursor:].strip())
 
-        # Get or create source node
-        if source_id not in self.node_id_map:
-            internal_id = self._create_node_id()
-            self.node_id_map[source_id] = internal_id
-            node = PlaybookNode(
-                id=internal_id,
-                label=source_label or source_id,
-                type=source_type or "step",
-                metadata={"mermaid_id": source_id, "subgraph": self.current_subgraph}
-            )
-            self.nodes.append(node)
+        if len(node_parts) != len(matches) + 1:
+            return
 
-        # Extract edge label if present (for labeled edges)
-        edge_label = None
-        target_part_idx = 1
-
-        # Check if there's a label captured in the pattern
-        if '(' in edge_pattern and len(parts) > 2:
-            # Pattern captured a label
-            edge_label = parts[1].strip()
-            target_part_idx = 2
-
-        # Extract target node(s) - handle multiple targets
-        remaining = parts[target_part_idx] if target_part_idx < len(parts) else ""
-
-        # Split by potential connectors for chained edges
-        target_parts = re.split(r'(?:-->|-\.->|==>|---+>)', remaining)
-
-        for target_part in target_parts:
-            target_part = target_part.strip()
-            if not target_part:
+        for idx, match in enumerate(matches):
+            source_part = node_parts[idx]
+            target_part = node_parts[idx + 1]
+            if not source_part or not target_part:
                 continue
 
+            source_id, source_label, source_type = self._extract_node_info(source_part)
             target_id, target_label, target_type = self._extract_node_info(target_part)
+            if not source_id or not target_id:
+                continue
 
-            # Get or create target node
-            if target_id not in self.node_id_map:
-                internal_id = self._create_node_id()
-                self.node_id_map[target_id] = internal_id
-                node = PlaybookNode(
-                    id=internal_id,
-                    label=target_label or target_id,
-                    type=target_type or "step",
-                    metadata={"mermaid_id": target_id, "subgraph": self.current_subgraph}
-                )
-                self.nodes.append(node)
+            self._ensure_node(source_id, source_label, source_type)
+            self._ensure_node(target_id, target_label, target_type)
 
-            # Create edge
             self._create_edge(
                 self.node_id_map[source_id],
                 self.node_id_map[target_id],
-                label=edge_label,
-                edge_type=edge_type
+                label=self._edge_label(match),
+                edge_type=self._edge_type(match),
             )
+
+    def _ensure_node(
+        self,
+        node_id: str,
+        label: Optional[str],
+        node_type: Optional[str],
+    ) -> None:
+        if node_id in self.node_id_map:
+            return
+        internal_id = self._create_node_id()
+        self.node_id_map[node_id] = internal_id
+        node = PlaybookNode(
+            id=internal_id,
+            label=label or node_id,
+            type=node_type or "step",
+            metadata={"mermaid_id": node_id, "subgraph": self.current_subgraph}
+        )
+        self.nodes.append(node)
+
+    def _edge_label(self, match: re.Match[str]) -> Optional[str]:
+        for group in ("solid_label", "dotted_label", "bold_label"):
+            label = match.group(group)
+            if label:
+                return label.strip()
+        return None
+
+    def _edge_type(self, match: re.Match[str]) -> str:
+        if match.group("dotted") or match.group("dotted_label"):
+            return "dotted"
+        if match.group("bold") or match.group("bold_label"):
+            return "bold"
+        return "solid"
 
     def _parse_node_definition(self, line: str) -> None:
         """

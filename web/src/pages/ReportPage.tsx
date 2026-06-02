@@ -5,7 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useHashRouter } from '../router';
-import { API_BASE_URL } from '../api/client';
+import { API_BASE_URL, API_KEY } from '../api/client';
 
 interface ReportData {
   execution: {
@@ -60,7 +60,11 @@ const ReportPage: React.FC<ReportPageProps> = ({ executionId }) => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/executions/${executionId}/report`);
+        const res = await fetch(`${API_BASE_URL}/api/executions/${executionId}/report`, {
+          headers: {
+            ...(API_KEY ? { 'X-API-Key': API_KEY } : {}),
+          },
+        });
         if (!res.ok) throw new Error('Failed to fetch report');
         setReport(await res.json());
       } catch {
@@ -73,7 +77,11 @@ const ReportPage: React.FC<ReportPageProps> = ({ executionId }) => {
 
   const handleCopyMarkdown = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/executions/${executionId}/report/markdown`);
+      const res = await fetch(`${API_BASE_URL}/api/executions/${executionId}/report/markdown`, {
+        headers: {
+          ...(API_KEY ? { 'X-API-Key': API_KEY } : {}),
+        },
+      });
       if (!res.ok) throw new Error();
       const text = await res.text();
       await navigator.clipboard.writeText(text);

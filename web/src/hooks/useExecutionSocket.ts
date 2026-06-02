@@ -4,13 +4,13 @@
  */
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { API_BASE_URL, API_KEY } from '../api/client';
 
 const WS_BASE = (() => {
   try {
-    const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5177';
-    return apiUrl.replace(/^http/, 'ws');
+    return API_BASE_URL.replace(/^http/, 'ws');
   } catch {
-    return `ws://${window.location.hostname}:5177`;
+    return `ws://${window.location.hostname}:8000`;
   }
 })();
 
@@ -30,7 +30,12 @@ export function useExecutionSocket(executionId: string | undefined) {
   const connect = useCallback(() => {
     if (!executionId) return;
     try {
-      const ws = new WebSocket(`${WS_BASE}/api/executions/${executionId}/live`);
+      const params = new URLSearchParams();
+      if (API_KEY) params.set('api_key', API_KEY);
+      const qs = params.toString();
+      const ws = new WebSocket(
+        `${WS_BASE}/api/executions/${encodeURIComponent(executionId)}/live${qs ? `?${qs}` : ''}`
+      );
       wsRef.current = ws;
 
       ws.onopen = () => {

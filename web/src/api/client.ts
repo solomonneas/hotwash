@@ -206,6 +206,7 @@ async function requestText(path: string, options: RequestInit = {}): Promise<str
   const response = await fetch(url, {
     ...options,
     headers: {
+      ...(API_KEY ? { 'X-API-Key': API_KEY } : {}),
       ...(options.headers || {}),
     },
   });
@@ -255,6 +256,9 @@ export async function bulkImportPlaybooks(files: File[]): Promise<BulkImportResu
   const response = await fetch(url, {
     method: 'POST',
     body: formData,
+    headers: {
+      ...(API_KEY ? { 'X-API-Key': API_KEY } : {}),
+    },
   });
 
   if (!response.ok) {

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -23,10 +24,11 @@ from fastapi import (
     WebSocketDisconnect,
     status,
 )
+from fastapi.responses import PlainTextResponse
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
-from api.auth import get_api_key
+from api.auth import get_api_key, is_valid_api_key
 from api.database import get_db, SessionLocal
 from api.orm_models import Execution, ExecutionEvent, Playbook
 from api.schemas import (
@@ -53,6 +55,8 @@ logger = logging.getLogger(__name__)
 
 EVIDENCE_ROOT = Path(__file__).resolve().parent.parent / "data" / "evidence"
 MAX_EVIDENCE_BYTES = 25 * 1024 * 1024  # 25 MB
+SAFE_NODE_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,128}$")
+MAX_EVIDENCE_FILENAME_LENGTH = 255
 
 VALID_EXECUTION_STATUSES = {"active", "paused", "completed", "abandoned"}
 VALID_STEP_STATUSES = {"not_started", "in_progress", "completed", "skipped", "blocked"}
@@ -112,6 +116,171 @@ async def _broadcast(execution_id: int, event_type: str, data: Optional[Dict[str
     if data:
         payload["data"] = data
     await broadcaster.broadcast(execution_id, payload)
+
+
+def _validate_node_id_for_path(node_id: str) -> None:
+    if not SAFE_NODE_ID_RE.fullmatch(node_id):
+        raise HTTPException(status_code=400, detail="Unsafe node_id for evidence storage")
+
+
+def _validate_evidence_filename(filename: str | None) -> str:
+    safe_name = (filename or "evidence.bin").strip()
+    if (
+        not safe_name
+        or safe_name in {".", ".."}
+        or len(safe_name) > MAX_EVIDENCE_FILENAME_LENGTH
+        or "/" in safe_name
+        or "\\" in safe_name
+        or any(ord(ch) < 32 for ch in safe_name)
+        or Path(safe_name).name != safe_name
+    ):
+        raise HTTPException(status_code=400, detail="Unsafe evidence filename")
+    return safe_name
+
+
+def _unique_evidence_path(target_dir: Path, filename: str) -> tuple[Path, str]:
+    candidate = target_dir / filename
+    if not candidate.exists():
+        return candidate, filename
+
+    parsed = Path(filename)
+    stem = parsed.stem or "evidence"
+    suffix = parsed.suffix
+    for idx in range(1, 10000):
+        unique_name = f"{stem}-{idx}{suffix}"
+        candidate = target_dir / unique_name
+        if not candidate.exists():
+            return candidate, unique_name
+    raise HTTPException(status_code=500, detail="Could not allocate evidence filename")
+
+
+def _parse_dt(value: Any) -> Optional[datetime]:
+    if isinstance(value, datetime):
+        return value
+    if not value:
+        return None
+    if isinstance(value, str):
+        try:
+            return datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+    return None
+
+
+def _format_duration_ms(milliseconds: Optional[float]) -> Optional[str]:
+    if milliseconds is None or milliseconds < 0:
+        return None
+    if milliseconds < 60_000:
+        return f"{round(milliseconds / 1000)}s"
+    if milliseconds < 3_600_000:
+        return f"{round(milliseconds / 60_000)}m"
+    return f"{milliseconds / 3_600_000:.1f}h"
+
+
+def _step_duration(step: Dict[str, Any]) -> Optional[float]:
+    started = _parse_dt(step.get("started_at"))
+    completed = _parse_dt(step.get("completed_at"))
+    if not started or not completed:
+        return None
+    return (completed - started).total_seconds() * 1000
+
+
+def _build_report(execution: Execution) -> Dict[str, Any]:
+    steps = load_steps(execution)
+    summary = _summary(execution, steps)
+    durations = [
+        (step, duration)
+        for step in steps
+        if (duration := _step_duration(step)) is not None
+    ]
+    bottleneck = max(durations, key=lambda item: item[1], default=None)
+    total_duration = None
+    if execution.started_at and execution.completed_at:
+        total_duration = (execution.completed_at - execution.started_at).total_seconds() * 1000
+    timeline = [
+        TimelineEventOut(
+            timestamp=event.timestamp,
+            event_type=event.event_type,
+            actor=event.actor,
+            description=event.description,
+        ).model_dump(mode="json")
+        for event in execution.events
+    ]
+
+    report_steps = []
+    for step in steps:
+        duration = _step_duration(step)
+        report_steps.append({
+            **step,
+            "duration": _format_duration_ms(duration),
+        })
+
+    return {
+        "execution": summary.model_dump(mode="json"),
+        "playbook_title": execution.playbook.title if execution.playbook else None,
+        "metrics": {
+            "total_duration": _format_duration_ms(total_duration),
+            "steps_completed": summary.steps_completed,
+            "steps_total": summary.steps_total,
+            "mean_step_time": _format_duration_ms(
+                sum(duration for _, duration in durations) / len(durations)
+                if durations
+                else None
+            ),
+            "bottleneck_step": bottleneck[0].get("node_label") if bottleneck else None,
+            "bottleneck_time": _format_duration_ms(bottleneck[1]) if bottleneck else None,
+        },
+        "timeline": timeline,
+        "steps": report_steps,
+    }
+
+
+def _report_to_markdown(report: Dict[str, Any]) -> str:
+    execution = report["execution"]
+    metrics = report["metrics"]
+    lines = [
+        "# After-Action Report",
+        "",
+        f"## {execution['incident_title']}",
+        "",
+        f"- Playbook: {report.get('playbook_title') or 'Unknown'}",
+        f"- Status: {execution['status']}",
+        f"- Started by: {execution.get('started_by') or 'Unknown'}",
+        f"- Started at: {execution['started_at']}",
+        f"- Completed at: {execution.get('completed_at') or 'Not completed'}",
+        f"- Duration: {metrics.get('total_duration') or 'Unknown'}",
+        f"- Steps completed: {metrics.get('steps_completed', 0)}/{metrics.get('steps_total', 0)}",
+        "",
+        "## Timeline",
+        "",
+    ]
+    timeline = report.get("timeline") or []
+    if timeline:
+        for event in timeline:
+            actor = f" ({event['actor']})" if event.get("actor") else ""
+            lines.append(f"- {event['timestamp']}{actor}: {event['description']}")
+    else:
+        lines.append("- No timeline events recorded.")
+
+    lines.extend(["", "## Steps", ""])
+    for step in report.get("steps") or []:
+        lines.append(f"### {step.get('node_label') or step.get('node_id')}")
+        lines.append(f"- Status: {step.get('status')}")
+        if step.get("assignee"):
+            lines.append(f"- Assignee: {step['assignee']}")
+        if step.get("duration"):
+            lines.append(f"- Duration: {step['duration']}")
+        notes = step.get("notes") or []
+        if notes:
+            lines.append("- Notes:")
+            lines.extend(f"  - {note}" for note in notes)
+        evidence = step.get("evidence") or []
+        if evidence:
+            lines.append("- Evidence:")
+            lines.extend(f"  - {item.get('filename')} ({item.get('size')} bytes)" for item in evidence)
+        lines.append("")
+
+    return "\n".join(lines).strip() + "\n"
 
 
 @router.post("/executions", response_model=ExecutionSummary, status_code=status.HTTP_201_CREATED)
@@ -296,16 +465,17 @@ async def upload_evidence(
     if len(body) > MAX_EVIDENCE_BYTES:
         raise HTTPException(status_code=413, detail="Evidence file exceeds size limit")
 
+    _validate_node_id_for_path(node_id)
     target_dir = EVIDENCE_ROOT / str(execution.id) / node_id
     target_dir.mkdir(parents=True, exist_ok=True)
-    safe_name = Path(file.filename or "evidence.bin").name
-    target_path = target_dir / safe_name
+    safe_name = _validate_evidence_filename(file.filename)
+    target_path, stored_name = _unique_evidence_path(target_dir, safe_name)
     target_path.write_bytes(body)
 
     uploaded_at = datetime.now(timezone.utc).isoformat()
     evidence_list = list(step.get("evidence") or [])
     evidence_list.append({
-        "filename": safe_name,
+        "filename": stored_name,
         "size": len(body),
         "uploaded_at": uploaded_at,
     })
@@ -316,10 +486,10 @@ async def upload_evidence(
         db,
         execution,
         event_type="evidence_attached",
-        description=f"Evidence '{safe_name}' attached to '{step.get('node_label')}'",
+        description=f"Evidence '{stored_name}' attached to '{step.get('node_label')}'",
     )
     db.commit()
-    await _broadcast(execution.id, "evidence_attached", {"node_id": node_id, "filename": safe_name})
+    await _broadcast(execution.id, "evidence_attached", {"node_id": node_id, "filename": stored_name})
     return ExecutionStep(**step)
 
 
@@ -343,8 +513,27 @@ def get_timeline(execution_id: int, db: Session = Depends(get_db)):
     ]
 
 
+@router.get("/executions/{execution_id}/report")
+def get_execution_report(execution_id: int, db: Session = Depends(get_db)):
+    execution = _ensure_execution(db, execution_id)
+    return _build_report(execution)
+
+
+@router.get("/executions/{execution_id}/report/markdown")
+def get_execution_report_markdown(execution_id: int, db: Session = Depends(get_db)):
+    execution = _ensure_execution(db, execution_id)
+    return PlainTextResponse(
+        content=_report_to_markdown(_build_report(execution)),
+        media_type="text/markdown",
+    )
+
+
 @ws_router.websocket("/executions/{execution_id}/live")
 async def execution_socket(websocket: WebSocket, execution_id: int):
+    if not is_valid_api_key(websocket.query_params.get("api_key")):
+        await websocket.close(code=4401)
+        return
+
     db = SessionLocal()
     try:
         exists = db.query(Execution.id).filter(Execution.id == execution_id).first()

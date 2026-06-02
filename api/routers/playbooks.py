@@ -5,6 +5,7 @@ CRUD endpoints for playbook persistence and versioning.
 """
 
 import json
+import re
 import uuid
 from typing import Any, Dict, List, Optional
 
@@ -29,6 +30,11 @@ from api.schemas import (
 from api.services.tags import get_or_create_tag, normalize_tag
 
 router = APIRouter(dependencies=[Depends(get_api_key)])
+shared_router = APIRouter()
+SHARE_TOKEN_RE = re.compile(
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+    re.IGNORECASE,
+)
 
 
 def _parse_graph_json(content_markdown: str) -> Dict[str, Any]:
@@ -321,8 +327,11 @@ def revoke_share_link(playbook_id: int, db: Session = Depends(get_db)):
     return None
 
 
-@router.get("/shared/{token}", response_model=SharedPlaybookResponse)
+@shared_router.get("/shared/{token}", response_model=SharedPlaybookResponse)
 def get_shared_playbook(token: str, db: Session = Depends(get_db)):
+    if not SHARE_TOKEN_RE.fullmatch(token):
+        raise HTTPException(status_code=404, detail="Shared playbook not found")
+
     playbook = (
         db.query(Playbook)
         .options(selectinload(Playbook.tags))

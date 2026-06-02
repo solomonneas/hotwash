@@ -59,6 +59,7 @@ app.add_middleware(
 # Register routers
 app.include_router(parse.router, prefix="/api", tags=["parse"])
 app.include_router(playbooks.router, prefix="/api", tags=["playbooks"])
+app.include_router(playbooks.shared_router, prefix="/api", tags=["playbooks"])
 app.include_router(export.router, prefix="/api", tags=["export"])
 app.include_router(integrations.router, prefix="/api", tags=["integrations"])
 app.include_router(executions.router, prefix="/api", tags=["executions"])

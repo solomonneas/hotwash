@@ -32,11 +32,14 @@ def initialize_api_key() -> str:
     return _API_KEY
 
 
-def get_api_key(x_api_key: str | None = Header(default=None, alias="X-API-Key")) -> str:
+def is_valid_api_key(provided_key: str | None) -> bool:
     expected_key = initialize_api_key()
+    return secrets.compare_digest(provided_key or "", expected_key or "")
+
+
+def get_api_key(x_api_key: str | None = Header(default=None, alias="X-API-Key")) -> str:
     provided_key = x_api_key or ""
-    normalized_expected_key = expected_key or ""
-    if not secrets.compare_digest(provided_key, normalized_expected_key):
+    if not is_valid_api_key(provided_key):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or missing API key",

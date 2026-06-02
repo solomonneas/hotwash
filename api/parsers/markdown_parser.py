@@ -173,9 +173,11 @@ class MarkdownParser:
         else:
             return start_idx + 1
 
-        # Check for decision keywords
-        decision_keywords = ['if ', 'when ', 'else', 'otherwise', 'or if', 'elif']
-        is_decision = any(keyword in content.lower() for keyword in decision_keywords)
+        # Check for decision keywords. "Else" / "Otherwise" only make sense
+        # while parsing the previous decision block, not as standalone nodes.
+        lowered = content.lower()
+        decision_keywords = ['if ', 'when ', 'or if', 'elif']
+        is_decision = any(keyword in lowered for keyword in decision_keywords)
 
         if is_decision:
             return self._parse_decision_node(lines, start_idx, content)
@@ -230,21 +232,32 @@ class MarkdownParser:
         idx = start_idx + 1
         branches: List[Tuple[str, str]] = []  # (label, content) pairs
 
+        current_branch_label = 'yes'
+
         while idx < len(lines):
             next_line = lines[idx]
             stripped = next_line.strip()
+
+            if not stripped:
+                idx += 1
+                continue
+
+            is_top_level_else = (
+                stripped.startswith(('-', '*'))
+                and not next_line.startswith((' ', '\t'))
+                and stripped[1:].strip().lower() in {'else', 'otherwise'}
+            )
+            if is_top_level_else:
+                current_branch_label = 'no'
+                idx += 1
+                continue
 
             # Check if this is an indented item (branch)
             if next_line.startswith('  -') or next_line.startswith('  *') or next_line.startswith('    -') or next_line.startswith('    *'):
                 branch_content = stripped[1:].strip()
 
                 # Determine branch label
-                if 'else' in content.lower() or 'otherwise' in content.lower():
-                    branch_label = 'no'
-                elif branches:
-                    branch_label = 'no'
-                else:
-                    branch_label = 'yes'
+                branch_label = current_branch_label
 
                 branches.append((branch_label, branch_content))
                 idx += 1
