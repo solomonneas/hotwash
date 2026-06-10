@@ -5,6 +5,7 @@ FastAPI backend for converting markdown/mermaid playbooks to visual IR flowchart
 """
 
 import logging
+import os
 import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -44,16 +45,20 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS middleware for React frontend
+# CORS middleware for the React frontend. Defaults cover local dev only;
+# set HOTWASH_CORS_ORIGINS (comma-separated) for any non-localhost deployment.
+_DEFAULT_CORS_ORIGINS = "http://localhost:5177,http://localhost:3000"
+_cors_origins = [
+    origin.strip()
+    for origin in os.environ.get("HOTWASH_CORS_ORIGINS", _DEFAULT_CORS_ORIGINS).split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:5177",
-    ],
+    allow_origins=_cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "X-API-Key"],
 )
 
 # Register routers

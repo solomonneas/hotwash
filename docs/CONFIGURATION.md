@@ -43,10 +43,9 @@ If you want to enable playbook storage and sharing:
 cd web
 VITE_ENABLE_BACKEND=true npm run dev
 
-# Backend (in another terminal)
-cd ../api
-pip install -r requirements.txt
-python main.py
+# Backend (in another terminal, from the repo root)
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+HOTWASH_API_KEY=choose-a-strong-key .venv/bin/uvicorn api.main:app --port 8000
 ```
 
 Backend runs on `http://localhost:8000`
@@ -55,46 +54,28 @@ Backend runs on `http://localhost:8000`
 
 ### Environment Variables
 
-Create a `.env` file in the `api/` directory:
+The backend reads configuration from the process environment (there is no
+`.env` loader). Export the variables before starting uvicorn, or pass
+`--env-file` to uvicorn:
 
 ```bash
-DATABASE_URL=sqlite:///./playbooks.db
-CORS_ORIGINS=http://localhost:5177
-GEMINI_API_KEY=your-api-key-here
-ENABLE_AI_GENERATION=false
-STORAGE_PATH=./data/playbooks
+HOTWASH_API_KEY=choose-a-strong-key
+HOTWASH_CORS_ORIGINS=http://localhost:5177
 ```
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `DATABASE_URL` | Database connection string | sqlite:///./playbooks.db |
-| `CORS_ORIGINS` | Allowed frontend origins (comma-separated) | http://localhost:5177 |
-| `GEMINI_API_KEY` | Gemini API key for AI generation | (empty) |
-| `ENABLE_AI_GENERATION` | Enable AI-powered playbook generation | false |
-| `STORAGE_PATH` | Directory for playbook exports | ./data/playbooks |
+| `HOTWASH_API_KEY` | **Required for any real deployment.** Shared API key checked on every authenticated route (`X-API-Key` header). When unset, the server generates a random ephemeral key that is never logged, so authenticated routes are effectively unreachable until you set this. | (ephemeral, unusable) |
+| `HOTWASH_CORS_ORIGINS` | Allowed frontend origins, comma-separated. Set this when serving the frontend from anything other than localhost. | http://localhost:5177,http://localhost:3000 |
+| `HOTWASH_ENCRYPTION_KEY` | Fernet key for integration secrets at rest. Overrides the key file. | (empty) |
+| `HOTWASH_KEY_PATH` | Path to the Fernet key file, auto-created with mode 0600. | `~/.encryption_key` |
+| `HOTWASH_WAZUH_SEED_SECRET` | HMAC secret for the seeded Wazuh ingest mapping. | (random per seed) |
+| `HOTWASH_PRIVATE_HOST_ALLOWLIST` | CIDRs exempt from the outbound SSRF block (see below). | (empty) |
 
 ### Database Setup
 
-SQLite (default):
-```bash
-# Database is auto-created on first run
-# Located at: ./playbooks.db
-```
-
-PostgreSQL:
-```bash
-DATABASE_URL=postgresql://user:password@localhost/playbook_forge
-# Create database first:
-# createdb playbook_forge
-```
-
-### API Keys
-
-To enable AI generation:
-
-1. Get Gemini API key from Google Cloud Console
-2. Set `GEMINI_API_KEY` in `.env`
-3. Set `ENABLE_AI_GENERATION=true`
+SQLite only. The database is auto-created and seeded on first run at
+`api/data/playbooks.db` (gitignored).
 
 ## Backend Integration Variables
 
@@ -404,29 +385,16 @@ React Flow uses virtualization for large graphs. If experiencing lag:
 
 ### Playbook Not Loading from Backend
 
-Check CORS configuration:
-
-```python
-# In api/main.py
-app = FastAPI()
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=os.getenv("CORS_ORIGINS", "http://localhost:5177").split(","),
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-```
-
-### AI Generation Not Working
-
-Verify Gemini API key:
+Check CORS configuration. The backend allows the origins in
+`HOTWASH_CORS_ORIGINS` (comma-separated, defaults to the localhost dev
+ports). If the frontend is served from another origin, set:
 
 ```bash
-# Test API key
-curl -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=YOUR_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"contents":[{"parts":[{"text":"test"}]}]}'
+HOTWASH_CORS_ORIGINS=https://hotwash.example.com .venv/bin/uvicorn api.main:app --port 8000
 ```
+
+Also confirm the frontend has `VITE_ENABLE_BACKEND=true` and a matching
+`VITE_HOTWASH_API_KEY` for the backend's `HOTWASH_API_KEY`.
 
 ### Canvas Freezing on Large Playbooks
 

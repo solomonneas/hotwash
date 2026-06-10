@@ -226,7 +226,8 @@ def seed_wazuh_mappings(db: Session) -> int:
             "restarts; otherwise rotate via PATCH /api/ingest/mappings/{id}.",
             SEED_WAZUH_MAPPING_NAME,
         )
-        logger.debug("Wazuh seed secret: %s", secret)
+        # Never log the secret itself; rotate via the mappings API to obtain
+        # a usable value when this ephemeral path was taken.
 
     encrypted = encrypt_secret(secret)
     if not encrypted:

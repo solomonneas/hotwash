@@ -26,8 +26,12 @@ def initialize_api_key() -> str:
         _API_KEY = configured
     else:
         _API_KEY = str(uuid.uuid4())
-        logger.warning("No HOTWASH_API_KEY configured, generated an ephemeral API key")
-        logger.debug("Generated API key: %s", _API_KEY)
+        # Never log the generated key itself: debug-level logging would write
+        # the live credential to logs. Real deployments must set HOTWASH_API_KEY.
+        logger.warning(
+            "No HOTWASH_API_KEY configured, generated an ephemeral API key. "
+            "Authenticated routes are unreachable until HOTWASH_API_KEY is set."
+        )
 
     return _API_KEY
 
