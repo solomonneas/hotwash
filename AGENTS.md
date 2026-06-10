@@ -39,7 +39,6 @@ Report actual results. If anything fails, report the failure verbatim and do not
 
 ## Gotchas
 - Writing a test that needs live infrastructure: mark it `live`, or it will run by default and fail.
-- Reading the README "Project Structure" section: it has drifted (`api/playbooks/` and `api/generator/` do not exist). Trust the actual tree: `routers/`, `services/`, `integrations/`, `parsers/`.
 - Looking for frontend lint or tests: `web/package.json` has only `dev`, `build`, `preview`. Do not invoke scripts that are not there.
 - Setting env vars: frontend uses `VITE_*` in `web/.env`; backend vars go in `api/.env` (see `docs/CONFIGURATION.md`).
 - Changing MCP code: the package publishes from `mcp/dist/` only, built with tsup. `npm run lint` and `npm run typecheck` are both `tsc --noEmit`, so running either is sufficient.

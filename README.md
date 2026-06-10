@@ -162,32 +162,28 @@ All variants use the same parsing engine and React Flow canvas. Switch themes in
 
 ```text
 hotwash/
-├── web/                      # React frontend
+├── web/                      # React 18 + TypeScript + Vite frontend
 │   ├── src/
-│   │   ├── components/
-│   │   │   ├── Canvas.tsx       # React Flow canvas
-│   │   │   ├── NodeEditor.tsx   # Custom node properties panel
-│   │   │   ├── PlaybookLibrary.tsx
-│   │   │   └── ...
-│   │   ├── pages/
-│   │   │   ├── Editor.tsx       # Main editing interface
-│   │   │   ├── Library.tsx      # Playbook browser
-│   │   │   └── Settings.tsx
-│   │   ├── parsers/
-│   │   │   ├── markdownParser.ts  # Markdown to graph converter
-│   │   │   ├── mermaidParser.ts   # Mermaid parser
-│   │   │   └── validator.ts
-│   │   ├── store/
-│   │   │   └── usePlaybookStore.ts # Zustand (persisted)
-│   │   └── variants/            # 5 theme layouts
+│   │   ├── components/       # FlowCanvas (React Flow), panels, viewers
+│   │   ├── pages/            # Editor, Library, Executions, Suggestions, ...
+│   │   ├── parsers/          # Client-side Markdown/Mermaid parsing
+│   │   ├── api/              # Backend API client
+│   │   ├── hooks/            # useExecutionSocket and friends
+│   │   └── variants/         # Theme layouts
 │   ├── package.json
 │   └── vite.config.ts
 ├── api/                      # FastAPI backend (optional)
 │   ├── main.py               # Entry point
-│   ├── playbooks/            # Playbook storage
-│   ├── generator/            # AI-powered generation
-│   └── requirements.txt
-└── README.md
+│   ├── routers/              # playbooks, executions, export, ingest, integrations, parse
+│   ├── services/             # Execution engine, ingest matching, tags
+│   ├── parsers/              # Markdown + Mermaid parsers
+│   ├── integrations/         # SOAR integration clients (TheHive)
+│   └── tests/                # pytest suite
+├── mcp/                      # hotwash-mcp npm package (MCP server, Node >= 20)
+│   ├── src/index.ts          # Entry point
+│   └── src/tools/            # playbooks, runs, suggestions, artifacts tools
+├── docs/                     # ARCHITECTURE, CONFIGURATION, THEHIVE-INTEGRATION, WAZUH-INGEST
+└── requirements.txt
 ```
 
 ---
