@@ -97,6 +97,7 @@ MERMAID_PARSER_IMPLEMENTATION.md
 docs/PRD-*.md
 docs/DEVELOPMENT-PLAN.md
 
-# Runtime evidence uploads
+# Runtime evidence uploads and local database
 api/data/evidence/
+api/data/*.db
 .brigade/
