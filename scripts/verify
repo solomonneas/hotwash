@@ -24,6 +24,9 @@ echo "==> mcp: typecheck"
 echo "==> mcp: build"
 (cd mcp && npm run build)
 
+echo "==> web: test"
+(cd web && npm test)
+
 echo "==> web: build"
 (cd web && npm run build)
 

@@ -13,7 +13,7 @@ Per-component mapping, for reference when narrowing a failure:
 - Backend or shared change: `.venv/bin/python -m pytest api/tests/ -v` from the repo root (106 tests, live tests auto-skipped). Dependencies are pinned in `requirements.txt` and installed in the repo venv (`python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`); the system python has older versions and is not the supported test environment.
 - Parser change: also `python3 api/tests/run_parser_tests.py` (or `make test`, which runs both).
 - MCP change: `cd mcp && npm run typecheck`; packaging change: also `cd mcp && npm run build`.
-- Frontend change: `cd web && npm run build` (there is no web test suite).
+- Frontend change: `cd web && npm test && npm run build` (vitest covers the client-side parsers).
 
 Report actual results. If anything fails, report the failure verbatim and do not claim success.
 
@@ -39,7 +39,7 @@ Report actual results. If anything fails, report the failure verbatim and do not
 
 ## Gotchas
 - Writing a test that needs live infrastructure: mark it `live`, or it will run by default and fail.
-- Looking for frontend lint or tests: `web/package.json` has only `dev`, `build`, `preview`. Do not invoke scripts that are not there.
+- Looking for frontend lint: there is none; `web/package.json` has `dev`, `build`, `preview`, `test`. Do not invoke scripts that are not there.
 - Setting env vars: frontend uses `VITE_*` in `web/.env`; backend vars go in `api/.env` (see `docs/CONFIGURATION.md`).
 - Changing MCP code: the package publishes from `mcp/dist/` only, built with tsup. `npm run lint` and `npm run typecheck` are both `tsc --noEmit`, so running either is sufficient.
 
