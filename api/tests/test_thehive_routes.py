@@ -5,6 +5,7 @@ from __future__ import annotations
 from unittest.mock import patch
 
 from api.integrations.clients.thehive import TheHiveError
+from api.security import PinnedURL
 
 
 def test_test_endpoint_mock_mode_uses_mock_data(client, temp_db, api_key):
@@ -24,7 +25,10 @@ def test_test_endpoint_live_mode_calls_thehive_client(client, configured_thehive
         "user": "admin@thehive.local",
         "stats": {},
     }
-    with patch("api.routers.integrations.validate_integration_url", return_value=None), \
+    with patch(
+        "api.routers.integrations.resolve_and_pin_integration_url",
+        side_effect=lambda url: PinnedURL(url=url, hostname=None, host_header=None),
+    ), \
          patch("api.routers.integrations.TheHiveClient") as MockClient:
         MockClient.return_value.status.return_value = fake_status
         resp = client.post(
@@ -39,7 +43,10 @@ def test_test_endpoint_live_mode_calls_thehive_client(client, configured_thehive
 
 
 def test_test_endpoint_live_mode_maps_thehive_error_to_502(client, configured_thehive, api_key):
-    with patch("api.routers.integrations.validate_integration_url", return_value=None), \
+    with patch(
+        "api.routers.integrations.resolve_and_pin_integration_url",
+        side_effect=lambda url: PinnedURL(url=url, hostname=None, host_header=None),
+    ), \
          patch("api.routers.integrations.TheHiveClient") as MockClient:
         MockClient.return_value.status.side_effect = TheHiveError(
             "Invalid API key for TheHive", status_code=401, details={}
@@ -68,7 +75,10 @@ def _call_action(client, api_key, verb, payload):
 
 
 def test_create_case_action_happy_path(client, configured_thehive, api_key):
-    with patch("api.routers.integrations.validate_integration_url", return_value=None), \
+    with patch(
+        "api.routers.integrations.resolve_and_pin_integration_url",
+        side_effect=lambda url: PinnedURL(url=url, hostname=None, host_header=None),
+    ), \
          patch("api.routers.integrations.TheHiveClient") as MockClient:
         MockClient.return_value.create_case.return_value = {
             "_id": "~123",
@@ -130,7 +140,10 @@ def test_create_case_rejects_when_no_api_key_configured(client, temp_db, api_key
 
 
 def test_create_case_maps_upstream_401_to_502(client, configured_thehive, api_key):
-    with patch("api.routers.integrations.validate_integration_url", return_value=None), \
+    with patch(
+        "api.routers.integrations.resolve_and_pin_integration_url",
+        side_effect=lambda url: PinnedURL(url=url, hostname=None, host_header=None),
+    ), \
          patch("api.routers.integrations.TheHiveClient") as MockClient:
         MockClient.return_value.create_case.side_effect = TheHiveError(
             "Invalid API key for TheHive", status_code=401, details={}
@@ -143,7 +156,10 @@ def test_create_case_maps_upstream_401_to_502(client, configured_thehive, api_ke
 
 
 def test_create_alert_action_happy_path(client, configured_thehive, api_key):
-    with patch("api.routers.integrations.validate_integration_url", return_value=None), \
+    with patch(
+        "api.routers.integrations.resolve_and_pin_integration_url",
+        side_effect=lambda url: PinnedURL(url=url, hostname=None, host_header=None),
+    ), \
          patch("api.routers.integrations.TheHiveClient") as MockClient:
         MockClient.return_value.create_alert.return_value = {
             "_id": "~A1",
@@ -179,7 +195,10 @@ def test_create_alert_action_happy_path(client, configured_thehive, api_key):
 
 
 def test_add_observable_action_happy_path(client, configured_thehive, api_key):
-    with patch("api.routers.integrations.validate_integration_url", return_value=None), \
+    with patch(
+        "api.routers.integrations.resolve_and_pin_integration_url",
+        side_effect=lambda url: PinnedURL(url=url, hostname=None, host_header=None),
+    ), \
          patch("api.routers.integrations.TheHiveClient") as MockClient:
         MockClient.return_value.add_observable.return_value = {"_id": "~O1"}
         resp = _call_action(

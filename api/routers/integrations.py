@@ -21,7 +21,7 @@ from api.integrations.schemas import (
     CreateCaseRequest,
 )
 from api.schemas import IntegrationOut, IntegrationUpdate
-from api.security import validate_integration_url
+from api.security import apply_host_pinning, resolve_and_pin_integration_url
 
 router = APIRouter(dependencies=[Depends(get_api_key)])
 
@@ -111,7 +111,7 @@ def test_integration(tool: str, db: Session = Depends(get_db)):
         db.commit()
         raise HTTPException(status_code=400, detail="No base_url configured")
 
-    validate_integration_url(integration.base_url)
+    pinned = resolve_and_pin_integration_url(integration.base_url)
     api_key_plain = decrypt_secret(integration.api_key)
 
     if tool == "thehive":
@@ -119,6 +119,7 @@ def test_integration(tool: str, db: Session = Depends(get_db)):
             base_url=integration.base_url,
             api_key=api_key_plain,
             verify_ssl=integration.verify_ssl,
+            pinned=pinned,
         )
         try:
             result = client.status()
@@ -140,13 +141,19 @@ def test_integration(tool: str, db: Session = Depends(get_db)):
         return {"tool": tool, "mock_mode": False, "result": result}
 
     # Fallback generic probe for tools without a real client yet.
+    # Connects to the pinned IP (with Host/SNI restored) and never follows
+    # redirects, so DNS rebinding cannot steer the probe to a private address.
     try:
         import requests
-        resp = requests.get(
-            integration.base_url,
+        session = requests.Session()
+        apply_host_pinning(session, pinned)
+        if api_key_plain:
+            session.headers["Authorization"] = f"Bearer {api_key_plain}"
+        resp = session.get(
+            pinned.url,
             timeout=5,
             verify=integration.verify_ssl,
-            headers={"Authorization": f"Bearer {api_key_plain}"} if api_key_plain else {},
+            allow_redirects=False,
         )
         if resp.status_code in (200, 401, 403):
             integration.last_status = "connected"
@@ -177,11 +184,12 @@ def _build_thehive_client(integration: Integration) -> TheHiveClient:
     api_key_plain = decrypt_secret(integration.api_key)
     if not api_key_plain:
         raise HTTPException(status_code=400, detail="No API key configured")
-    validate_integration_url(integration.base_url)
+    pinned = resolve_and_pin_integration_url(integration.base_url)
     return TheHiveClient(
         base_url=integration.base_url,
         api_key=api_key_plain,
         verify_ssl=integration.verify_ssl,
+        pinned=pinned,
     )
 
 

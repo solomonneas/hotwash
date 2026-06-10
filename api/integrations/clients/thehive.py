@@ -11,6 +11,8 @@ from urllib.parse import quote
 
 import requests
 
+from api.security import PinnedURL, apply_host_pinning
+
 logger = logging.getLogger(__name__)
 
 
@@ -39,6 +41,7 @@ class TheHiveClient:
         api_key: str,
         verify_ssl: bool = True,
         timeout: float = 10.0,
+        pinned: PinnedURL | None = None,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
@@ -52,6 +55,13 @@ class TheHiveClient:
                 "Content-Type": "application/json",
             }
         )
+        # When a PinnedURL is supplied (security.resolve_and_pin_integration_url),
+        # connect to the validated literal IP and keep the original hostname for
+        # Host/SNI, so DNS cannot re-resolve to a private address at fetch time.
+        self._request_base = self.base_url
+        if pinned is not None:
+            self._request_base = pinned.url.rstrip("/")
+            apply_host_pinning(self._session, pinned)
 
     def _request(
         self,
@@ -61,7 +71,7 @@ class TheHiveClient:
         json: Any | None = None,
         params: dict[str, Any] | None = None,
     ) -> Any:
-        url = f"{self.base_url}{path}"
+        url = f"{self._request_base}{path}"
         try:
             resp = self._session.request(
                 method,
@@ -70,6 +80,9 @@ class TheHiveClient:
                 params=params,
                 timeout=self.timeout,
                 verify=self.verify_ssl,
+                # Redirects would re-resolve attacker-controlled hostnames and
+                # bypass the SSRF pin; the TheHive v1 API never redirects.
+                allow_redirects=False,
             )
         except requests.RequestException as exc:
             raise TheHiveError(
