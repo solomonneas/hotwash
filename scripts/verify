@@ -6,11 +6,17 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+# Use the repo venv when present so tests run against the pinned dependencies.
+PY=python3
+if [[ -x .venv/bin/python ]]; then
+  PY=.venv/bin/python
+fi
+
 echo "==> api: pytest"
-python3 -m pytest api/tests/ -q
+"$PY" -m pytest api/tests/ -q
 
 echo "==> api: parser test runner"
-python3 api/tests/run_parser_tests.py
+"$PY" api/tests/run_parser_tests.py
 
 echo "==> mcp: typecheck"
 (cd mcp && npm run typecheck)

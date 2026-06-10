@@ -61,19 +61,19 @@ def validate_integration_url(url: str) -> str:
     parsed = urlparse(url)
     if parsed.scheme not in {"http", "https"}:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Only HTTP(S) integration URLs are allowed",
         )
 
     if not parsed.hostname:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Integration URL must include a hostname",
         )
 
     if _is_blocked_ip(parsed.hostname):
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Integration URL points to a disallowed private or local address",
         )
 
@@ -81,7 +81,7 @@ def validate_integration_url(url: str) -> str:
         resolved = socket.getaddrinfo(parsed.hostname, parsed.port or None, type=socket.SOCK_STREAM)
     except socket.gaierror as exc:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Integration URL hostname could not be resolved",
         ) from exc
 
@@ -89,7 +89,7 @@ def validate_integration_url(url: str) -> str:
         resolved_ip = sockaddr[0]
         if _is_blocked_ip(resolved_ip):
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail="Integration URL resolves to a disallowed private or local address",
             )
 
