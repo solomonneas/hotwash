@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/React-18.2-61DAFB?style=for-the-badge&logo=react&logoColor=0f172a" alt="React 18.2">
   <img src="https://img.shields.io/badge/TypeScript-5.3-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript 5.3">
   <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.9+">
-  <img src="https://img.shields.io/badge/FastAPI-0.109-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI 0.109">
+  <img src="https://img.shields.io/badge/FastAPI-0.136-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI 0.136">
   <img src="https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS 3.4">
   <img src="https://img.shields.io/badge/MCP-server-7c3aed?style=for-the-badge" alt="MCP server">
   <img src="https://img.shields.io/badge/Wazuh-ingest-2563eb?style=for-the-badge" alt="Wazuh ingest">
@@ -56,8 +56,9 @@ cd hotwash
 # Frontend
 cd web && npm install && npm run dev
 
-# Backend (optional, for playbook generation AI)
-cd ../api && pip install -r requirements.txt && python main.py
+# Backend (optional, from the repo root)
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+.venv/bin/uvicorn api.main:app --port 8000
 ```
 
 Frontend: **http://localhost:5177**
@@ -220,7 +221,7 @@ for the integration script template, HMAC scheme, and cooldown semantics.
 
 ## Roadmap
 
-Where Hotwash is going next: a Model Context Protocol server (`hotwash-mcp`) that exposes the playbook engine to AI agents, and a Wazuh alert ingestion path that turns inbound alerts into runs.
+Shipped: the `hotwash-mcp` Model Context Protocol server (on npm) that lets AI agents drive playbook runs, and the Wazuh alert ingestion path with HMAC auth, mapping rules, and a human-review suggestion queue. Next up: richer execution reporting, more SOAR targets beyond TheHive, and deeper suggestion-queue workflows.
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan.
 

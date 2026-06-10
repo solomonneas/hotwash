@@ -10,14 +10,15 @@ in implementation but reinforce each other in production (Wazuh fires an
 alert, the MCP server lets an agent walk a SOC analyst through the matching
 playbook).
 
-## Pillar 1: hotwash-mcp
+## Pillar 1: hotwash-mcp (SHIPPED)
+
+Status: SHIPPED. Lives at `mcp/` in this repo and ships as `hotwash-mcp`
+on npm with playbook, run, suggestion, and artifact tools all live.
 
 A Model Context Protocol server that exposes the playbook engine to MCP
 clients (Claude Code, OpenClaw, Codex CLI, Cursor, Hermes, etc.).
 
-Lives at `mcp/` in this repo and ships as `hotwash-mcp` on npm.
-
-### Tools to expose
+### Tools exposed
 
 | Tool | Purpose |
 |------|---------|
