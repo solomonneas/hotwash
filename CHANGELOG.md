@@ -6,6 +6,10 @@ version line (`mcp-v*` tags); entries here cover the whole repo.
 ## Unreleased
 
 ### Added
+- Tag-triggered npm publish job for `hotwash-mcp` (tags `mcp-v*` / `v*`)
+  with a skip-if-already-published guard and npm provenance.
+- `HOTWASH_CORS_ORIGINS` env var: CORS origins are now configurable, with
+  localhost-only defaults and narrowed methods/headers.
 - TheHive integration: live `create_case`, `create_alert`, and
   `add_observable` SOAR actions with a structured client, Pydantic request
   schemas, and an opt-in live smoke test (`-m live`).
@@ -25,6 +29,12 @@ version line (`mcp-v*` tags); entries here cover the whole repo.
   back in line with the actual tree and ports.
 
 ### Fixed
+- SSRF guard closes the DNS-rebinding TOCTOU: integration fetches now
+  resolve once, validate every resolved address, and connect to the
+  pinned IP with the original hostname kept for Host/SNI; redirects on
+  outbound integration requests are disabled.
+- Generated API key and Wazuh seed secret are no longer written to logs
+  at debug level; deployment docs now require `HOTWASH_API_KEY`.
 - SSRF guard now blocks IPv6 private, loopback, and link-local targets.
 - `case_id` values are validated and URL-encoded to block path injection.
 - TheHive `status` reads the top-level version field of TheHive 5.4.
@@ -32,6 +42,8 @@ version line (`mcp-v*` tags); entries here cover the whole repo.
   client compatibility.
 
 ### Removed
+- Unused `Markdown` pin (clears the PYSEC-2026-89 advisory; nothing
+  imports the package).
 - Tracked runtime SQLite database (`api/data/playbooks.db`) removed from
   the repo and scrubbed from history; the API seeds itself on startup.
 - Stale `web/public/index.html` duplicate.
