@@ -1,0 +1,24 @@
+#!/bin/bash
+# Single verification entrypoint. AGENTS.md's Definition of Done defers to
+# this file, so the gate lives in exactly one place. Runs every component
+# gate so one green run covers any change. Live-marked tests stay excluded
+# (api/tests/conftest.py skips them unless -m live is passed explicitly).
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+echo "==> api: pytest"
+python3 -m pytest api/tests/ -q
+
+echo "==> api: parser test runner"
+python3 api/tests/run_parser_tests.py
+
+echo "==> mcp: typecheck"
+(cd mcp && npm run typecheck)
+
+echo "==> mcp: build"
+(cd mcp && npm run build)
+
+echo "==> web: build"
+(cd web && npm run build)
+
+echo "OK: all gates green"

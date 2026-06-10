@@ -1,7 +1,15 @@
 # Repository Guidance
 
 ## Definition of Done
-Before reporting any change complete, run every gate that touches your change and report actual output:
+Before reporting any change complete, run the single verification entrypoint and report actual output:
+
+```bash
+./scripts/verify
+```
+
+It runs all component gates in order, so one green run covers any change (live tests stay auto-skipped).
+
+Per-component mapping, for reference when narrowing a failure:
 - Backend or shared change: `python3 -m pytest api/tests/ -v` from the repo root (106 tests, live tests auto-skipped).
 - Parser change: also `python3 api/tests/run_parser_tests.py` (or `make test`, which runs both).
 - MCP change: `cd mcp && npm run typecheck`; packaging change: also `cd mcp && npm run build`.
