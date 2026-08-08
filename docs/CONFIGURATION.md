@@ -8,7 +8,7 @@ Create a `.env` file in the `web/` directory:
 
 ```bash
 VITE_APP_PORT=5177
-VITE_API_BASE=http://localhost:8000
+VITE_API_URL=http://localhost:8000
 VITE_STORAGE_KEY=playbook-forge-v1
 VITE_ENABLE_BACKEND=false
 VITE_THEME_DEFAULT=soc
@@ -17,7 +17,8 @@ VITE_THEME_DEFAULT=soc
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `VITE_APP_PORT` | Frontend port | 5177 |
-| `VITE_API_BASE` | Backend API URL | http://localhost:8000 |
+| `VITE_API_URL` | Backend API URL (read by `web/src/api/client.ts`) | http://localhost:8000 |
+| `VITE_HOTWASH_API_KEY` | API key sent as `X-API-Key` on backend requests. Must match the backend's `HOTWASH_API_KEY` when `VITE_ENABLE_BACKEND=true`. | (unset) |
 | `VITE_STORAGE_KEY` | localStorage key for playbooks | playbook-forge-v1 |
 | `VITE_ENABLE_BACKEND` | Enable backend features (storage, sync) | false |
 | `VITE_THEME_DEFAULT` | Default theme on first load | soc |
@@ -41,7 +42,10 @@ If you want to enable playbook storage and sharing:
 ```bash
 # Frontend
 cd web
-VITE_ENABLE_BACKEND=true npm run dev
+VITE_ENABLE_BACKEND=true \
+VITE_API_URL=http://localhost:8000 \
+VITE_HOTWASH_API_KEY=choose-a-strong-key \
+npm run dev
 
 # Backend (in another terminal, from the repo root)
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
@@ -434,8 +438,9 @@ ports). If the frontend is served from another origin, set:
 HOTWASH_CORS_ORIGINS=https://hotwash.example.com .venv/bin/uvicorn api.main:app --port 8000
 ```
 
-Also confirm the frontend has `VITE_ENABLE_BACKEND=true` and a matching
-`VITE_HOTWASH_API_KEY` for the backend's `HOTWASH_API_KEY`.
+Also confirm the frontend has `VITE_ENABLE_BACKEND=true`, `VITE_API_URL`
+pointing at the backend, and a matching `VITE_HOTWASH_API_KEY` for the
+backend's `HOTWASH_API_KEY`.
 
 ### Canvas Freezing on Large Playbooks
 
