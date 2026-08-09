@@ -74,13 +74,23 @@ HOTWASH_CORS_ORIGINS=http://localhost:5177
 | `HOTWASH_ENCRYPTION_KEY` | Fernet key for integration secrets at rest. Overrides the key file. | (empty) |
 | `HOTWASH_KEY_PATH` | Path to the Fernet key file, auto-created with mode 0600. | `~/.encryption_key` |
 | `HOTWASH_WAZUH_SEED_SECRET` | HMAC secret for the seeded Wazuh ingest mapping. | (random per seed) |
+| `HOTWASH_PLAYBOOK_SEED_DIR` | Directory of markdown playbooks inserted on first run when the database is empty. Paths may be absolute or relative; `~` is expanded. | `api/seed_data/playbooks` (shipped with the app) |
 | `HOTWASH_PRIVATE_HOST_ALLOWLIST` | CIDRs exempt from the outbound SSRF block (see below). | (empty) |
 | `HOTWASH_WAZUH_AR_COMMANDS` | Comma-separated allow-list of Wazuh active-response commands. When set, only these commands can be dispatched; when unset, any command the manager defines is allowed (with a warning). | (empty) |
 
 ### Database Setup
 
-SQLite only. The database is auto-created and seeded on first run at
+SQLite only. The database is auto-created on first run at
 `api/data/playbooks.db` (gitignored).
+
+On startup, when the playbook table is empty, the API reads markdown files from
+`HOTWASH_PLAYBOOK_SEED_DIR` (default: `api/seed_data/playbooks` in this repo) and
+inserts them. That directory ships with sample playbooks, including the Wazuh
+vulnerability-export runbook used by the default ingest mapping. If the seed
+directory is missing or contains no markdown files, startup logs an informational
+message and continues with an empty library. Override `HOTWASH_PLAYBOOK_SEED_DIR`
+to seed from your own playbook collection (for example, a shared workspace
+directory of `.md` runbooks).
 
 ## Backend Integration Variables
 

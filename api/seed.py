@@ -25,7 +25,17 @@ from api.services.tags import get_or_create_tag, normalize_tag
 
 logger = logging.getLogger(__name__)
 
-PLAYBOOKS_DIR = Path("/home/user/.openclaw/workspace/playbooks")
+DEFAULT_PLAYBOOKS_DIR = Path(__file__).parent / "seed_data" / "playbooks"
+
+
+def get_playbooks_seed_dir() -> Path:
+    """Return the directory of markdown playbooks used for first-run seeding."""
+    configured = getenv_compat(
+        "HOTWASH_PLAYBOOK_SEED_DIR",
+        "PLAYBOOK_FORGE_PLAYBOOK_SEED_DIR",
+        default=str(DEFAULT_PLAYBOOKS_DIR),
+    )
+    return Path(configured).expanduser()
 
 
 def _parse_front_matter_tags(content: str) -> List[str]:
@@ -161,14 +171,30 @@ def seed(db: Session) -> int:
     if existing_count > 0:
         return 0
 
-    if not PLAYBOOKS_DIR.exists():
+    playbooks_dir = get_playbooks_seed_dir()
+    if not playbooks_dir.is_dir():
+        logger.info(
+            "Skipping playbook seed: directory %s does not exist "
+            "(default is %s; set HOTWASH_PLAYBOOK_SEED_DIR to override)",
+            playbooks_dir,
+            DEFAULT_PLAYBOOKS_DIR,
+        )
+        return 0
+
+    markdown_paths = [
+        path
+        for path in sorted(playbooks_dir.glob("*.md"))
+        if not path.name.upper().startswith("TEMPLATE")
+    ]
+    if not markdown_paths:
+        logger.info(
+            "Skipping playbook seed: no markdown playbooks found in %s",
+            playbooks_dir,
+        )
         return 0
 
     inserted = 0
-    for path in sorted(PLAYBOOKS_DIR.glob("*.md")):
-        if path.name.upper().startswith("TEMPLATE"):
-            continue
-
+    for path in markdown_paths:
         content = path.read_text(encoding="utf-8")
         title = _extract_title(content) or path.stem.replace("-", " ").title()
         description = _extract_description(content)
@@ -261,7 +287,15 @@ def seed_db() -> int:
     try:
         seed_integrations(db)
         inserted = seed(db)
-        seed_wazuh_mappings(db)
+        if inserted:
+            logger.info(
+                "Seeded %d playbook(s) from %s",
+                inserted,
+                get_playbooks_seed_dir(),
+            )
+        mappings_inserted = seed_wazuh_mappings(db)
+        if mappings_inserted:
+            logger.info("Seeded %d Wazuh ingest mapping(s)", mappings_inserted)
         return inserted
     finally:
         db.close()
