@@ -39,7 +39,7 @@ def test_seed_inserts_shipped_playbooks_on_empty_db(temp_db, monkeypatch):
 def test_seed_uses_configured_playbooks_dir(temp_db, monkeypatch, tmp_path):
     custom_dir = tmp_path / "custom-playbooks"
     custom_dir.mkdir()
-  (custom_dir / "custom.md").write_text(
+    (custom_dir / "custom.md").write_text(
         "# Custom Seed Playbook\n\nA short description for testing.\n",
         encoding="utf-8",
     )
@@ -84,6 +84,7 @@ def test_seed_db_wrapper_seeds_playbooks_and_mappings(temp_db, monkeypatch):
     monkeypatch.delenv("HOTWASH_PLAYBOOK_SEED_DIR", raising=False)
     monkeypatch.delenv("PLAYBOOK_FORGE_PLAYBOOK_SEED_DIR", raising=False)
     monkeypatch.setenv("HOTWASH_WAZUH_SEED_SECRET", "test-seed-secret")
+    monkeypatch.setattr("api.seed.SessionLocal", temp_db)
 
     inserted = seed_db()
 
