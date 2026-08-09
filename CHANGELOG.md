@@ -43,6 +43,9 @@ version line (`mcp-v*` tags); entries here cover the whole repo.
   back in line with the actual tree and ports.
 
 ### Fixed
+- First-run playbook seeding no longer depends on a hardcoded OpenClaw
+  workspace path; seeds ship under `api/seed_data/playbooks` and
+  `HOTWASH_PLAYBOOK_SEED_DIR` overrides the source directory.
 - Markdown link hrefs are sanitized before render: playbook content can no
   longer smuggle a `javascript:`/`vbscript:`/`data:` link (stored XSS), and
   inline rendering is length-capped against a quadratic-regex tab freeze.
